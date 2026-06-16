@@ -2,174 +2,128 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Salgsdashboard — Juni 2026</title>
+<title>Salgsdashboard</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:#0b0f1e;color:#fff;font-family:'Inter',sans-serif;font-size:13px}
-.shell{display:grid;height:100vh;grid-template-rows:38px 1fr;padding:8px 10px;gap:6px}
-.topbar{display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:13px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:6px}
-.logo i{color:#6366f1;font-size:16px}
-.mbadge{background:rgba(99,102,241,.2);color:#a5b4fc;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;border:1px solid rgba(99,102,241,.3)}
-.clk{font-size:11px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:10px}
-.addbtn{background:rgba(99,102,241,.18);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;margin-right:4px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+body{background:#0a0e1a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid rgba(255,255,255,.07)}
+.logo{font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em}
+.top-right{display:flex;align-items:center;gap:14px}
+.clock{font-size:13px;color:rgba(255,255,255,.4);font-weight:500}
+.month-badge{background:rgba(99,102,241,.18);color:#a5b4fc;font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;border:1px solid rgba(99,102,241,.3)}
+.sync-wrap{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.3)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
 .sync-dot.err{background:#ef4444;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.add-btn{background:rgba(99,102,241,.18);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
 
-.grid{display:grid;height:100%;gap:6px;grid-template-columns:200px 1fr 1fr 190px;grid-template-rows:72px 1fr 1fr}
-.card{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;overflow:hidden;display:flex;flex-direction:column}
-.card-title{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;flex-shrink:0}
+.main{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;padding:16px 28px 0}
+.stat-card{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc-blue::before{background:linear-gradient(90deg,#6366f1,#818cf8)}
+.sc-green::before{background:linear-gradient(90deg,#10b981,#34d399)}
+.sc-amber::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.sc-purple::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+.stat-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase}
+.stat-value{font-size:26px;font-weight:800;line-height:1.1}
+.stat-sub{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-icon{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.sc-blue .stat-icon{background:rgba(99,102,241,.15);color:#818cf8}
+.sc-green .stat-icon{background:rgba(16,185,129,.15);color:#34d399}
+.sc-amber .stat-icon{background:rgba(245,158,11,.15);color:#fbbf24}
+.sc-purple .stat-icon{background:rgba(139,92,246,.15);color:#a78bfa}
 
-.stat-kalle{grid-column:1;grid-row:1;background:linear-gradient(135deg,#1e1b4b,#111827);border-color:rgba(99,102,241,.25)}
-.stat-row{grid-column:2/4;grid-row:1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.stat-best{grid-column:4;grid-row:1;background:linear-gradient(135deg,#1a2535,#111827);border-color:rgba(250,204,21,.15)}
+.content{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px 28px 20px}
+.left-col{display:flex;flex-direction:column;gap:12px}
+.panel{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 22px}
+.panel-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.lb-header{display:grid;grid-template-columns:40px 1fr 90px 110px 130px 90px;gap:8px;padding:0 8px 8px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px}
+.lb-hcell{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);letter-spacing:.08em;text-transform:uppercase}
+.lb-hcell:nth-child(3),.lb-hcell:nth-child(4),.lb-hcell:nth-child(5),.lb-hcell:nth-child(6){text-align:right}
+.lb-row{display:grid;grid-template-columns:40px 1fr 90px 110px 130px 90px;gap:8px;align-items:center;padding:7px 8px;border-radius:10px}
+.lb-row.top1{background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.12)}
+.lb-row.top2{background:rgba(156,163,175,.04);border:1px solid rgba(156,163,175,.1)}
+.lb-row.top3{background:rgba(180,83,9,.04);border:1px solid rgba(180,83,9,.12)}
+.rank{font-size:14px;font-weight:700;text-align:center}
+.r1{color:#fbbf24}.r2{color:#9ca3af}.r3{color:#b45309}.rn{color:rgba(255,255,255,.25);font-size:13px}
+.seller-info{display:flex;align-items:center;gap:10px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.sname{font-size:13px;font-weight:600;color:#f1f5f9}
+.cell-num{font-size:13px;font-weight:700;text-align:right;color:#f1f5f9}
+.prog-wrap{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.prog-bg{width:70px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.prog-fill{height:100%;border-radius:3px}
+.prog-pct{font-size:11px;font-weight:600;min-width:32px;text-align:right}
+.badge-sm{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-align:center}
+.b-green{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+.b-yellow{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+.b-red{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
 
-.scard{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden}
-.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.sc1::before{background:linear-gradient(90deg,#6366f1,#818cf8)}
-.sc2::before{background:linear-gradient(90deg,#10b981,#34d399)}
-.sc3::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
-.sc4::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
-.sicon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.sc1 .sicon{background:rgba(99,102,241,.15);color:#818cf8}
-.sc2 .sicon{background:rgba(16,185,129,.15);color:#34d399}
-.sc3 .sicon{background:rgba(245,158,11,.15);color:#fbbf24}
-.sc4 .sicon{background:rgba(139,92,246,.15);color:#a78bfa}
-.sbody{display:flex;flex-direction:column}
-.slbl{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase}
-.sval{font-size:18px;font-weight:800;line-height:1.1}
-.ssub{font-size:9px;color:rgba(255,255,255,.25)}
-
-.ldr-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;margin:0 auto 4px;border:2px solid rgba(250,204,21,.3);flex-shrink:0}
-.ldr-name{font-size:12px;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ldr-val{font-size:16px;font-weight:800;color:#fbbf24;text-align:center;line-height:1.1}
-.ldr-sub{font-size:9px;color:rgba(255,255,255,.3);text-align:center}
-
-.lb-panel{grid-column:1/3;grid-row:2/4}
-.lb-head{display:grid;grid-template-columns:22px 1fr 44px 90px 80px 58px;gap:4px;padding:0 4px 5px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
-.lbhc{font-size:8px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.07em;text-transform:uppercase}
-.lbhc:nth-child(n+3){text-align:right}
-.lb-body{flex:1;overflow-y:auto}
-.lb-body::-webkit-scrollbar{width:2px}
-.lb-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
-.lbr{display:grid;grid-template-columns:22px 1fr 44px 90px 80px 58px;gap:4px;align-items:center;padding:4px 4px;border-radius:6px;margin-bottom:2px}
-.lbr.t1{background:rgba(250,204,21,.05);border:1px solid rgba(250,204,21,.1)}
-.lbr.t2{background:rgba(156,163,175,.03);border:1px solid rgba(156,163,175,.08)}
-.lbr.t3{background:rgba(180,83,9,.03);border:1px solid rgba(180,83,9,.1)}
-.rnk{font-size:11px;font-weight:700;text-align:center}
-.r1{color:#fbbf24}.r2{color:#9ca3af}.r3{color:#b45309}.rn{color:rgba(255,255,255,.2);font-size:10px}
-.si{display:flex;align-items:center;gap:6px}
-.av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
-.sn{font-size:11px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cn{font-size:11px;font-weight:700;text-align:right;color:#f1f5f9}
-.pw{display:flex;align-items:center;gap:4px;justify-content:flex-end}
-.pbg{width:45px;height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
-.pf{height:100%;border-radius:2px}
-.pp{font-size:9px;font-weight:700;min-width:26px;text-align:right}
-.bdg{font-size:8px;font-weight:700;padding:1px 5px;border-radius:20px;text-align:center;white-space:nowrap}
-.bg{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.2)}
-.by{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
-.br{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.15)}
-
-.bar-panel{grid-column:3;grid-row:2}
-.bchart{display:flex;align-items:flex-end;gap:4px;flex:1}
-.bc{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
-.bar{width:100%;border-radius:3px 3px 0 0;min-height:3px}
-.blbl{font-size:7px;color:rgba(255,255,255,.25);text-align:center;overflow:hidden;white-space:nowrap;width:100%;text-overflow:ellipsis}
-
-.act-panel{grid-column:3;grid-row:3}
-.act-body{flex:1;overflow-y:auto}
-.act-body::-webkit-scrollbar{width:2px}
-.act-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
-.ai{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.ai:last-child{border-bottom:none}
-.adot{width:5px;height:5px;border-radius:50%;background:#6366f1;flex-shrink:0}
-.adot.g{background:#10b981}
-.ainfo{flex:1;min-width:0}
-.aname{font-size:10px;font-weight:600;color:#f1f5f9}
-.adet{font-size:9px;color:rgba(255,255,255,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.aval{font-size:10px;font-weight:700;color:#a5b4fc;white-space:nowrap}
-
-.top3-panel{grid-column:4;grid-row:2}
-.goal-panel{grid-column:4;grid-row:3}
-.t3grid{display:flex;flex-direction:column;gap:6px;flex:1}
-.t3item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border-radius:7px;padding:6px 8px}
-.t3rank{font-size:16px;font-weight:800;min-width:20px}
-.t3info{flex:1;min-width:0}
-.t3name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.t3val{font-size:10px;color:rgba(255,255,255,.4)}
-.t3salg{font-size:18px;font-weight:800;text-align:right;line-height:1}
-.t3slbl{font-size:8px;color:rgba(255,255,255,.3);text-align:right}
-.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:1}
-.gitem{background:rgba(255,255,255,.03);border-radius:7px;padding:6px 8px;display:flex;flex-direction:column;gap:3px}
-.gname{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f1f5f9}
-.gpbar{height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:2px}
-.gpfill{height:100%;border-radius:2px}
-.gnum{font-size:9px;color:rgba(255,255,255,.3)}
+.right-col{display:flex;flex-direction:column;gap:12px}
+.best-card{background:linear-gradient(135deg,#1e1b4b 0%,#111827 100%);border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:20px;text-align:center}
+.best-av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin:0 auto 12px;border:2px solid rgba(250,204,21,.4)}
+.best-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.best-sub{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:12px}
+.best-stat{font-size:28px;font-weight:800;color:#fbbf24;line-height:1}
+.best-lbl{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
+.activity-panel{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 20px;flex:1}
+.act-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:7px;height:7px;border-radius:50%;background:#6366f1;margin-top:5px;flex-shrink:0}
+.act-dot.g{background:#10b981}
+.act-name{font-size:12px;font-weight:600;color:#f1f5f9}
+.act-det{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px}
+.act-val{font-size:12px;font-weight:700;color:#a5b4fc;margin-left:auto;white-space:nowrap}
 
 /* Modal */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
 .modal-ov.open{display:flex}
-.modal{background:#1a2236;border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:20px;width:500px}
-.modal h3{font-size:13px;font-weight:700;margin-bottom:4px;color:#a5b4fc}
-.modal p{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:12px}
-.modal textarea{width:100%;min-height:100px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:monospace;font-size:11px;padding:10px;resize:vertical;margin-bottom:12px}
+.modal{background:#1a2236;border:1px solid rgba(99,102,241,.3);border-radius:14px;padding:22px;width:520px}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:4px;color:#a5b4fc}
+.modal p{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:14px}
+.modal textarea{width:100%;min-height:110px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:monospace;font-size:12px;padding:10px;resize:vertical;margin-bottom:12px}
 .modal textarea::placeholder{color:rgba(255,255,255,.2)}
 .mbtns{display:flex;gap:8px;align-items:center}
-.mbtn{border-radius:8px;padding:7px 16px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid}
+.mbtn{border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid}
 .mb-add{background:rgba(99,102,241,.2);color:#a5b4fc;border-color:rgba(99,102,241,.4)}
 .mb-cancel{background:transparent;color:rgba(255,255,255,.35);border-color:rgba(255,255,255,.1)}
 .mb-reset{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.25);margin-left:auto}
-.chip{font-size:10px;color:rgba(255,255,255,.25);background:rgba(255,255,255,.05);padding:3px 10px;border-radius:20px}
-.status-msg{font-size:10px;margin-top:8px;color:rgba(255,255,255,.3);min-height:16px}
+.status-msg{font-size:11px;margin-top:10px;color:rgba(255,255,255,.4);min-height:16px}
+.chip{font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:4px 12px;border-radius:20px}
 </style>
 </head>
 <body>
-<div class="shell">
-  <div class="topbar">
-    <div class="logo"><i class="ti ti-chart-bar"></i> Salgsdashboard</div>
-    <span class="mbadge" id="mbadge">Laster...</span>
-    <div class="clk">
-      <span><span class="sync-dot" id="sync-dot"></span><span id="sync-lbl">Tilkoblet</span></span>
-      <span id="clock"></span>
-      <button class="addbtn" onclick="openModal()"><i class="ti ti-plus"></i> Legg til data</button>
+
+<div class="top-bar">
+  <div class="logo"><i class="ti ti-chart-bar"></i> Salgsdashboard</div>
+  <span class="month-badge" id="month-badge">Laster...</span>
+  <div class="top-right">
+    <div class="sync-wrap"><span class="sync-dot" id="sync-dot"></span><span id="sync-lbl">Kobler til...</span></div>
+    <div class="clock" id="clock"></div>
+    <button class="add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Legg til data</button>
+  </div>
+</div>
+
+<div class="main" id="stat-cards"></div>
+<div class="content">
+  <div class="left-col">
+    <div class="panel">
+      <div class="panel-title" id="lb-title">Leaderboard</div>
+      <div class="lb-header">
+        <div class="lb-hcell">Plass</div><div class="lb-hcell">Selger</div>
+        <div class="lb-hcell">FIBER-salg</div><div class="lb-hcell">Omsetning</div>
+        <div class="lb-hcell">Fremgang</div><div class="lb-hcell">Status</div>
+      </div>
+      <div id="leaderboard"></div>
     </div>
   </div>
-
-  <div class="grid">
-    <div class="card stat-kalle" id="leader-card" style="justify-content:center;align-items:center;gap:4px"></div>
-    <div class="stat-row" id="stat-row"></div>
-    <div class="card stat-best" id="best2-card" style="justify-content:center;align-items:center;gap:2px">
-      <div class="card-title" style="text-align:center">Siste salg</div>
-      <div id="last-sale" style="text-align:center"></div>
-    </div>
-    <div class="card lb-panel">
-      <div class="card-title" id="lbtitle">Leaderboard</div>
-      <div class="lb-head">
-        <div class="lbhc">#</div><div class="lbhc">Selger</div>
-        <div class="lbhc">Salg</div><div class="lbhc">Omsetning</div>
-        <div class="lbhc">Fremgang</div><div class="lbhc">Status</div>
-      </div>
-      <div class="lb-body" id="lb-body"></div>
-    </div>
-    <div class="card bar-panel">
-      <div class="card-title">Omsetning per selger</div>
-      <div class="bchart" id="bchart"></div>
-    </div>
-    <div class="card act-panel">
-      <div class="card-title">Siste registreringer</div>
-      <div class="act-body" id="activity"></div>
-    </div>
-    <div class="card top3-panel">
-      <div class="card-title">Topp 3 denne måneden</div>
-      <div class="t3grid" id="top3"></div>
-    </div>
-    <div class="card goal-panel">
-      <div class="card-title">Målstatus per selger</div>
-      <div class="goal-grid" id="goalg"></div>
+  <div class="right-col">
+    <div class="best-card" id="best-card"></div>
+    <div class="activity-panel">
+      <div class="panel-title">Siste registreringer</div>
+      <div id="activity"></div>
     </div>
   </div>
 </div>
@@ -178,13 +132,13 @@ html,body{height:100%;overflow:hidden;background:#0b0f1e;color:#fff;font-family:
 <div class="modal-ov" id="modal">
   <div class="modal">
     <h3><i class="ti ti-table-import"></i> Legg til salgsdata</h3>
-    <p>Lim inn tab-separert data fra Excel. Alle tilkoblede TV-er oppdateres automatisk.</p>
+    <p>Lim inn tab-separert data fra Excel. Alle TV-er oppdateres automatisk.</p>
     <textarea id="paste-area" placeholder="Consultant	Date of sale	Week	Value	Product&#10;Kalle	16.06.2026	24	9000	FIBER 100"></textarea>
     <div class="mbtns">
       <button class="mbtn mb-add" onclick="addData()"><i class="ti ti-upload"></i> Last opp</button>
       <button class="mbtn mb-cancel" onclick="closeModal()">Avbryt</button>
-      <span class="chip" id="rcount">0 rader i DB</span>
-      <button class="mbtn mb-reset" onclick="resetData()"><i class="ti ti-trash"></i> Nullstill måned</button>
+      <span class="chip" id="row-count">—</span>
+      <button class="mbtn mb-reset" onclick="resetData()"><i class="ti ti-trash"></i> Nullstill</button>
     </div>
     <div class="status-msg" id="status-msg"></div>
   </div>
@@ -204,7 +158,7 @@ const SMAL=8, OMAL=80000;
 
 let allRows=[];
 
-function gac(name){let h=0;for(let i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))%AC.length;return AC[h];}
+function gac(n){let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%AC.length;return AC[h];}
 function gdn(n){return DN[n.toLowerCase()]||n;}
 function ini(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 function kr(n){return new Intl.NumberFormat('nb-NO',{maximumFractionDigits:0}).format(n)+' kr';}
@@ -215,13 +169,10 @@ function gmk(ds){const p=ds.split('.');return p.length===3?p[1]+'.'+p[2]:'';}
 function gml(key){const mn=['','Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];const[mm,yy]=key.split('.');return(mn[parseInt(mm)]||mm)+' '+yy;}
 
 function setSync(ok){
-  const dot=document.getElementById('sync-dot');
-  const lbl=document.getElementById('sync-lbl');
-  if(ok){dot.className='sync-dot';lbl.textContent='Live';}
-  else{dot.className='sync-dot err';lbl.textContent='Frakoblet';}
+  document.getElementById('sync-dot').className='sync-dot'+(ok?'':' err');
+  document.getElementById('sync-lbl').textContent=ok?'Live':'Frakoblet';
 }
 
-// Parse TSV text into row objects
 function parseTSV(txt){
   const lines=txt.trim().split('\n').filter(l=>l.trim());
   const rows=[];
@@ -229,9 +180,7 @@ function parseTSV(txt){
   for(let i=s;i<lines.length;i++){
     const c=lines[i].split('\t');
     if(c.length<5) continue;
-    const consultant=c[0].trim();
-    const date_of_sale=c[1].trim();
-    const week=c[2].trim();
+    const consultant=c[0].trim(),date_of_sale=c[1].trim(),week=c[2].trim();
     const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
     const product=c[4].trim();
     if(!consultant) continue;
@@ -240,45 +189,39 @@ function parseTSV(txt){
   return rows;
 }
 
-// Load all rows from Supabase
 async function loadData(){
-  const {data,error}=await sb.from('sales').select('*').order('date_of_sale',{ascending:true});
-  if(error){setSync(false);console.error(error);return;}
+  const {data,error}=await sb.from('sales').select('*');
+  if(error){setSync(false);return;}
   setSync(true);
   allRows=(data||[]).map(r=>({name:r.consultant,dateStr:r.date_of_sale,value:r.value,product:r.product}));
-  document.getElementById('rcount').textContent=allRows.length+' rader i DB';
+  document.getElementById('row-count').textContent=allRows.length+' rader i DB';
   render();
 }
 
-// Subscribe to realtime changes
+// Sanntidsoppdatering
 sb.channel('sales-changes')
-  .on('postgres_changes',{event:'*',schema:'public',table:'sales'},()=>{
-    loadData();
-  })
-  .subscribe(status=>{
-    setSync(status==='SUBSCRIBED');
-  });
+  .on('postgres_changes',{event:'*',schema:'public',table:'sales'},()=>loadData())
+  .subscribe(s=>setSync(s==='SUBSCRIBED'));
 
-// Modal
 window.openModal=()=>document.getElementById('modal').classList.add('open');
 window.closeModal=()=>document.getElementById('modal').classList.remove('open');
-document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)window.closeModal();});
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))window.closeModal();});
 
 window.addData=async()=>{
   const txt=document.getElementById('paste-area').value;
   const rows=parseTSV(txt);
-  if(!rows.length){alert('Ingen gyldige rader funnet. Sjekk at data er tab-separert.');return;}
+  if(!rows.length){alert('Ingen gyldige rader. Sjekk at data er tab-separert.');return;}
   const msg=document.getElementById('status-msg');
   msg.textContent='Laster opp '+rows.length+' rader...';
   const {error}=await sb.from('sales').insert(rows);
-  if(error){msg.textContent='Feil: '+error.message;return;}
+  if(error){msg.textContent='Feil: '+error.message;console.error(error);return;}
   document.getElementById('paste-area').value='';
-  msg.textContent='✓ '+rows.length+' rader lastet opp! TV-ene oppdateres nå.';
-  setTimeout(()=>{msg.textContent='';window.closeModal();},2000);
+  msg.textContent='✓ '+rows.length+' rader lastet opp! Alle skjermer oppdateres nå.';
+  setTimeout(()=>{msg.textContent='';window.closeModal();},2500);
 };
 
 window.resetData=async()=>{
-  if(!confirm('Dette sletter ALLE salgsdata fra databasen. Er du sikker?')) return;
+  if(!confirm('Dette sletter ALLE data fra databasen. Er du sikker?')) return;
   const msg=document.getElementById('status-msg');
   msg.textContent='Sletter...';
   const {error}=await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
@@ -291,15 +234,15 @@ function render(){
   const months=[...new Set(allRows.map(r=>gmk(r.dateStr)).filter(Boolean))].sort();
   const lm=months[months.length-1]||'06.2026';
   const ml=gml(lm);
-  document.getElementById('mbadge').textContent=ml;
-  document.getElementById('lbtitle').textContent='Leaderboard — '+ml;
+  document.getElementById('month-badge').textContent=ml;
+  document.getElementById('lb-title').textContent='Leaderboard — '+ml;
 
   const aRows=allRows.filter(r=>isA(r.name));
   const mRows=aRows.filter(r=>gmk(r.dateStr)===lm);
 
   const sd=ACTIVE.map(sk=>{
     const rows=mRows.filter(r=>r.name.toLowerCase()===sk);
-    return{key:sk,name:gdn(sk),salg:rows.filter(r=>isF(r.product)).length,omset:rows.reduce((a,r)=>a+r.value,0),rows};
+    return{key:sk,name:gdn(sk),salg:rows.filter(r=>isF(r.product)).length,omset:rows.reduce((a,r)=>a+r.value,0)};
   });
   const wd=sd.filter(s=>s.salg>0||s.omset>0).sort((a,b)=>b.salg-a.salg||b.omset-a.omset);
   const nd=sd.filter(s=>s.salg===0&&s.omset===0);
@@ -310,74 +253,36 @@ function render(){
   const snitt=sorted.length?Math.round(tO/sorted.length):0;
   const foran=sorted.filter(s=>s.salg>=SMAL||s.omset>=OMAL).length;
 
-  // Leader
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="stat-card sc-blue"><div class="stat-icon"><i class="ti ti-currency-dollar"></i></div><div class="stat-label">Total omsetning</div><div class="stat-value">${kr(tO)}</div><div class="stat-sub">${ml}</div></div>
+    <div class="stat-card sc-green"><div class="stat-icon"><i class="ti ti-chart-bar"></i></div><div class="stat-label">FIBER-salg</div><div class="stat-value">${tS}</div><div class="stat-sub">Antall totalt</div></div>
+    <div class="stat-card sc-amber"><div class="stat-icon"><i class="ti ti-users"></i></div><div class="stat-label">Snitt per selger</div><div class="stat-value">${kr(snitt)}</div><div class="stat-sub">Omsetning</div></div>
+    <div class="stat-card sc-purple"><div class="stat-icon"><i class="ti ti-target"></i></div><div class="stat-label">På mål (8 salg)</div><div class="stat-value">${foran}<span style="font-size:16px;color:rgba(255,255,255,.3)"> / ${sorted.length}</span></div><div class="stat-sub">Selgere foran</div></div>`;
+
+  document.getElementById('leaderboard').innerHTML=sorted.map((s,i)=>{
+    const pct=Math.min(Math.round(s.salg/SMAL*100),100);
+    const [bg,fg]=gac(s.name);
+    const rc=i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const rk=i===0?`<span class="rank r1"><i class="ti ti-crown"></i></span>`:i===1?`<span class="rank r2">2</span>`:i===2?`<span class="rank r3">3</span>`:`<span class="rank rn">${i+1}</span>`;
+    const bc=pct>=100?'b-green':pct>=50?'b-yellow':'b-red';
+    const bt=pct>=100?'På mål':pct>=50?'På vei':'Under mål';
+    const clr=pct>=100?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+    return`<div class="lb-row ${rc}">${rk}<div class="seller-info"><div class="av" style="background:${fg};color:${bg}">${ini(s.name)}</div><span class="sname">${s.name}</span></div><div class="cell-num">${s.salg}</div><div class="cell-num">${kr(s.omset)}</div><div class="prog-wrap"><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${clr}"></div></div><span class="prog-pct" style="color:${clr}">${pct}%</span></div><div style="text-align:right"><span class="badge-sm ${bc}">${bt}</span></div></div>`;
+  }).join('');
+
   const best=wd[0];
   if(best){
     const [bg,fg]=gac(best.name);
-    document.getElementById('leader-card').innerHTML=`
-      <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px"><i class="ti ti-crown"></i> Leder</div>
-      <div class="ldr-av" style="background:${fg};color:${bg}">${ini(best.name)}</div>
-      <div class="ldr-name">${best.name}</div>
-      <div class="ldr-val">${best.salg} <span style="font-size:10px;color:rgba(255,255,255,.3)">salg</span></div>
-      <div class="ldr-sub">${kr(best.omset)}</div>`;
+    document.getElementById('best-card').innerHTML=`<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px"><i class="ti ti-star"></i> Leder denne måneden</div><div class="best-av" style="background:${fg};color:${bg}">${ini(best.name)}</div><div class="best-name">${best.name}</div><div class="best-sub">${best.salg} FIBER-salg i ${ml}</div><div class="best-stat">${kr(best.omset)}</div><div class="best-lbl">Total omsetning</div>`;
   }
 
-  // Stat cards
-  document.getElementById('stat-row').innerHTML=`
-    <div class="scard sc1"><div class="sicon"><i class="ti ti-currency-dollar"></i></div><div class="sbody"><div class="slbl">Total omsetning</div><div class="sval">${kr(tO)}</div><div class="ssub">${ml}</div></div></div>
-    <div class="scard sc2"><div class="sicon"><i class="ti ti-chart-bar"></i></div><div class="sbody"><div class="slbl">FIBER-salg</div><div class="sval">${tS}</div><div class="ssub">Antall totalt</div></div></div>
-    <div class="scard sc3"><div class="sicon"><i class="ti ti-users"></i></div><div class="sbody"><div class="slbl">Snitt omsetning</div><div class="sval">${kr(snitt)}</div><div class="ssub">Per selger</div></div></div>
-    <div class="scard sc4"><div class="sicon"><i class="ti ti-target"></i></div><div class="sbody"><div class="slbl">På mål</div><div class="sval">${foran}<span style="font-size:12px;color:rgba(255,255,255,.3)"> / ${sorted.length}</span></div><div class="ssub">Selgere foran</div></div></div>`;
-
-  // Last sale
-  const recent=[...aRows].sort((a,b)=>pd(b.dateStr)-pd(a.dateStr));
-  const last=recent[0];
-  if(last){
-    const [bg]=gac(gdn(last.name));
-    document.getElementById('last-sale').innerHTML=`<div style="font-size:14px;font-weight:800;color:${bg}">${gdn(last.name)}</div><div style="font-size:11px;color:rgba(255,255,255,.3)">${last.product}</div><div style="font-size:18px;font-weight:800;color:#a5b4fc;margin-top:2px">${kr(last.value)}</div><div style="font-size:9px;color:rgba(255,255,255,.25)">${last.dateStr}</div>`;
-  }
-
-  // Leaderboard
-  document.getElementById('lb-body').innerHTML=sorted.map((s,i)=>{
-    const pct=Math.min(Math.round(s.salg/SMAL*100),100);
-    const [bg,fg]=gac(s.name);
-    const rc=i===0?'t1':i===1?'t2':i===2?'t3':'';
-    const rk=i===0?`<span class="rnk r1"><i class="ti ti-crown"></i></span>`:i===1?`<span class="rnk r2">2</span>`:i===2?`<span class="rnk r3">3</span>`:`<span class="rnk rn">${i+1}</span>`;
-    const bc=pct>=100?'bg':pct>=50?'by':'br';
-    const bt=pct>=100?'På mål':pct>=50?'På vei':'Under';
-    const clr=pct>=100?'#10b981':pct>=50?'#f59e0b':'#ef4444';
-    return`<div class="lbr ${rc}">${rk}<div class="si"><div class="av" style="background:${fg};color:${bg}">${ini(s.name)}</div><span class="sn">${s.name}</span></div><div class="cn">${s.salg}</div><div class="cn">${kr(s.omset)}</div><div class="pw"><div class="pbg"><div class="pf" style="width:${pct}%;background:${clr}"></div></div><span class="pp" style="color:${clr}">${pct}%</span></div><div style="text-align:right"><span class="bdg ${bc}">${bt}</span></div></div>`;
-  }).join('');
-
-  // Bar chart
-  const bdata=[...wd].slice(0,14);
-  const mx=Math.max(...bdata.map(s=>s.omset),1);
-  document.getElementById('bchart').innerHTML=bdata.map(s=>{
-    const h=Math.max(Math.round(s.omset/mx*100),4);
-    const [bg]=gac(s.name);
-    return`<div class="bc"><div class="bar" style="height:${h}%;background:${bg}"></div><div class="blbl">${s.name.split(' ')[0]}</div></div>`;
-  }).join('');
-
-  // Activity
-  document.getElementById('activity').innerHTML=recent.slice(0,10).map(r=>`<div class="ai"><div class="adot ${isF(r.product)?'g':''}"></div><div class="ainfo"><div class="aname">${gdn(r.name)}</div><div class="adet">${r.product} · ${r.dateStr}</div></div><div class="aval">${kr(r.value)}</div></div>`).join('');
-
-  // Top 3
-  document.getElementById('top3').innerHTML=wd.slice(0,3).map((s,i)=>{
-    const [bg]=gac(s.name);
-    return`<div class="t3item"><div class="t3rank">${['🥇','🥈','🥉'][i]}</div><div class="t3info"><div class="t3name">${s.name}</div><div class="t3val">${kr(s.omset)}</div></div><div><div class="t3salg" style="color:${bg}">${s.salg}</div><div class="t3slbl">salg</div></div></div>`;
-  }).join('');
-
-  // Goal grid
-  document.getElementById('goalg').innerHTML=sorted.map(s=>{
-    const pct=Math.min(Math.round(s.salg/SMAL*100),100);
-    const clr=pct>=100?'#10b981':pct>=50?'#f59e0b':'#ef4444';
-    return`<div class="gitem"><div class="gname">${s.name}</div><div class="gpbar"><div class="gpfill" style="width:${pct}%;background:${clr}"></div></div><div class="gnum">${s.salg}/${SMAL} salg</div></div>`;
-  }).join('');
+  const recent=[...aRows].sort((a,b)=>pd(b.dateStr)-pd(a.dateStr)).slice(0,8);
+  document.getElementById('activity').innerHTML=recent.map(r=>`<div class="act-item"><div class="act-dot ${isF(r.product)?'g':''}"></div><div style="flex:1;min-width:0"><div class="act-name">${gdn(r.name)}</div><div class="act-det">${r.product} — ${r.dateStr}</div></div><div class="act-val">${kr(r.value)}</div></div>`).join('');
 }
 
 function tick(){
   const now=new Date();
-  document.getElementById('clock').textContent=now.toLocaleDateString('nb-NO',{weekday:'short',day:'numeric',month:'short'})+' · '+now.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('clock').textContent=now.toLocaleDateString('nb-NO',{weekday:'long',day:'numeric',month:'long'})+' — '+now.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});
 }
 
 loadData();
