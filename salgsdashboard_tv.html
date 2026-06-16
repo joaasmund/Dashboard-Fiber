@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salgsdashboard — Juni 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0e1a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .logo{font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em}
+  .clock{font-size:13px;color:rgba(255,255,255,.4);font-weight:500}
+  .month-badge{background:rgba(99,102,241,.18);color:#a5b4fc;font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;border:1px solid rgba(99,102,241,.3)}
+  .main{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;padding:16px 28px 0}
+  .stat-card{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+  .sc-blue::before{background:linear-gradient(90deg,#6366f1,#818cf8)}
+  .sc-green::before{background:linear-gradient(90deg,#10b981,#34d399)}
+  .sc-amber::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+  .sc-purple::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+  .stat-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase}
+  .stat-value{font-size:26px;font-weight:800;line-height:1.1}
+  .stat-sub{font-size:11px;color:rgba(255,255,255,.35)}
+  .stat-icon{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .sc-blue .stat-icon{background:rgba(99,102,241,.15);color:#818cf8}
+  .sc-green .stat-icon{background:rgba(16,185,129,.15);color:#34d399}
+  .sc-amber .stat-icon{background:rgba(245,158,11,.15);color:#fbbf24}
+  .sc-purple .stat-icon{background:rgba(139,92,246,.15);color:#a78bfa}
+  .content{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px 28px 20px}
+  .left-col{display:flex;flex-direction:column;gap:12px}
+  .panel{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px 22px}
+  .panel-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+  .lb-header{display:grid;grid-template-columns:40px 1fr 90px 110px 130px 90px;gap:8px;padding:0 8px 8px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px}
+  .lb-hcell{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);letter-spacing:.08em;text-transform:uppercase}
+  .lb-hcell:nth-child(3),.lb-hcell:nth-child(4),.lb-hcell:nth-child(5),.lb-hcell:nth-child(6){text-align:right}
+  .lb-row{display:grid;grid-template-columns:40px 1fr 90px 110px 130px 90px;gap:8px;align-items:center;padding:8px 8px;border-radius:10px}
+  .lb-row.top1{background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.12)}
+  .lb-row.top2{background:rgba(156,163,175,.04);border:1px solid rgba(156,163,175,.1)}
+  .lb-row.top3{background:rgba(180,83,9,.04);border:1px solid rgba(180,83,9,.12)}
+  .rank{font-size:14px;font-weight:700;text-align:center}
+  .r1{color:#fbbf24}.r2{color:#9ca3af}.r3{color:#b45309}.rn{color:rgba(255,255,255,.25);font-size:13px}
+  .seller-info{display:flex;align-items:center;gap:10px}
+  .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+  .sname{font-size:14px;font-weight:600;color:#f1f5f9}
+  .cell-num{font-size:14px;font-weight:700;text-align:right;color:#f1f5f9}
+  .prog-wrap{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .prog-bg{width:70px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+  .prog-fill{height:100%;border-radius:3px}
+  .prog-pct{font-size:11px;font-weight:600;min-width:32px;text-align:right}
+  .badge-sm{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-align:center}
+  .b-green{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+  .b-yellow{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+  .b-red{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+  .right-col{display:flex;flex-direction:column;gap:12px}
+  .best-card{background:linear-gradient(135deg,#1e1b4b 0%,#111827 100%);border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:20px;text-align:center}
+  .best-av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin:0 auto 12px;border:2px solid rgba(250,204,21,.4)}
+  .best-name{font-size:16px;font-weight:700;margin-bottom:4px}
+  .best-sub{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:12px}
+  .best-stat{font-size:28px;font-weight:800;color:#fbbf24;line-height:1}
+  .best-lbl{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
+  .activity-panel{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 20px;flex:1}
+  .act-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .act-item:last-child{border-bottom:none}
+  .act-dot{width:7px;height:7px;border-radius:50%;background:#6366f1;margin-top:5px;flex-shrink:0}
+  .act-dot.g{background:#10b981}
+  .act-name{font-size:12px;font-weight:600;color:#f1f5f9}
+  .act-det{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px}
+  .act-val{font-size:12px;font-weight:700;color:#a5b4fc;margin-left:auto;white-space:nowrap}
+  .bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:8px}
+  .bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+  .bar{width:100%;border-radius:4px 4px 0 0;min-height:4px}
+  .bar-lbl{font-size:9px;color:rgba(255,255,255,.3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
+  .bar-val{font-size:9px;color:rgba(255,255,255,.4);font-weight:600}
+
+  /* Legg til data panel */
+  .add-panel{background:#111827;border:1px solid rgba(99,102,241,.25);border-radius:14px;padding:18px 22px;margin:0 28px 12px}
+  .add-panel textarea{width:100%;min-height:70px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:'Inter',monospace;font-size:12px;padding:10px;resize:vertical;margin-bottom:10px}
+  .add-panel textarea::placeholder{color:rgba(255,255,255,.25)}
+  .add-row{display:flex;gap:10px;align-items:center}
+  .btn{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.35);border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+  .btn:hover{background:rgba(99,102,241,.35)}
+  .btn-reset{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.25)}
+  .btn-reset:hover{background:rgba(239,68,68,.2)}
+  .chip{font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:4px 12px;border-radius:20px}
+  .toggle-add{font-size:11px;color:#a5b4fc;cursor:pointer;text-decoration:underline;margin:8px 28px 0;display:inline-block}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><i class="ti ti-chart-bar"></i> Salgsdashboard</div>
+  <span class="month-badge" id="month-badge">Juni 2026</span>
+  <div class="clock" id="clock"></div>
+</div>
+
+<span class="toggle-add" onclick="toggleAdd()">+ Legg til nye data</span>
+
+<div class="add-panel" id="add-panel" style="display:none;margin-top:10px">
+  <div class="panel-title" style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Legg til salgsdata (tab-separert)</div>
+  <textarea id="paste-area" placeholder="Lim inn data her (med eller uten headerrad)&#10;Consultant	Date of sale	Week	Value	Product"></textarea>
+  <div class="add-row">
+    <button class="btn" onclick="addData()"><i class="ti ti-plus"></i> Legg til</button>
+    <button class="btn btn-reset" onclick="resetData()"><i class="ti ti-trash"></i> Nullstill</button>
+    <span class="chip" id="row-count">0 rader</span>
+  </div>
+</div>
+
+<div class="main" id="stat-cards"></div>
+<div class="content">
+  <div class="left-col">
+    <div class="panel">
+      <div class="panel-title" id="lb-title">Leaderboard — juni 2026</div>
+      <div class="lb-header">
+        <div class="lb-hcell">Plass</div>
+        <div class="lb-hcell">Selger</div>
+        <div class="lb-hcell">FIBER-salg</div>
+        <div class="lb-hcell">Omsetning</div>
+        <div class="lb-hcell">Fremgang</div>
+        <div class="lb-hcell">Status</div>
+      </div>
+      <div id="leaderboard"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Omsetning per selger</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+  </div>
+  <div class="right-col">
+    <div class="best-card" id="best-card"></div>
+    <div class="activity-panel">
+      <div class="panel-title">Siste registreringer</div>
+      <div id="activity"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ACTIVE_SELLERS=['kalle','alijan','marcus','hurlen','andreas','hermelink','simen','lars','melvin','eliot','torjus','sander','omar','aleksandra','aleksander','aleksander rognstad','nizar','shifa','jonas','chris','bjørn','charlie','arion'];
+const DISPLAY_NAMES={'kalle':'Kalle','alijan':'Alijan','marcus':'Marcus','hurlen':'Hurlen','andreas':'Andreas','hermelink':'Hermelink','simen':'Simen','lars':'Lars','melvin':'Melvin','eliot':'Eliot','torjus':'Torjus','sander':'Sander','omar':'Omar','aleksandra':'Aleksandra','aleksander':'Aleksander','aleksander rognstad':'Aleksander R.','nizar':'Nizar','shifa':'Shifa','jonas':'Jonas','chris':'Chris','bjørn':'Bjørn','charlie':'Charlie','arion':'Arion'};
+const AVATAR_COLORS=[['#6366f1','#1e1b4b'],['#10b981','#052e16'],['#f59e0b','#2d1d00'],['#8b5cf6','#2e1065'],['#ec4899','#500724'],['#14b8a6','#042f2e'],['#3b82f6','#1e3a5f'],['#ef4444','#450a0a'],['#a855f7','#3b0764'],['#22c55e','#052e16'],['#06b6d4','#082f49'],['#f97316','#431407'],['#84cc16','#1a2e05'],['#e879f9','#4a044e']];
+const SALG_MAL=8,OMSET_MAL=80000;
+
+const INITIAL_DATA=`Consultant\tDate of sale\tWeek\tValue\tProduct
+Kalle\t01.06.2026\t0\t9000\tFIBER 100
+Alijan\t01.06.2026\t23\t9000\tFiber 100
+Alijan\t01.06.2026\t23\t2750\tPORT FRIHET START
+Alijan\t01.06.2026\t23\t2750\tPORT FRIHET START
+Alijan\t01.06.2026\t23\t2500\tPORT FLYT 20
+Alijan\t01.06.2026\t23\t0\tPORT FLYT 20
+Chris\t01.06.2026\t23\t12000\tFiber 400
+Chris\t01.06.2026\t23\t400\t5G Reserve
+Chris\t01.06.2026\t23\t12000\tFiber 200
+Chris\t01.06.2026\t23\t2000\tFiber 200
+Sander\t01.06.2026\t23\t12000\tfiber 600
+Sander\t01.06.2026\t23\t9000\tFIBER 100
+Omar\t01.06.2026\t23\t12000\tFIBER 200
+Omar\t01.06.2026\t23\t12000\tFIBER 200
+Omar\t01.06.2026\t23\t12000\tFIBER 1GB
+Jonas\t01.06.2026\t23\t7000\tFiber 60
+Kalle\t02.06.2026\t0\t9000\tFIBER 100
+Kalle\t02.06.2026\t0\t12000\tFIBER 200
+Alijan\t02.06.2026\t23\t9000\tFiber 100
+Omar\t02.06.2026\t23\t9000\tFIBER 100
+Kalle\t03.06.2026\t0\t9000\tFIBER 100
+Kalle\t03.06.2026\t0\t9000\tFIBER 100
+Marcus\t04.06.2026\t23\t9000\tFIBER 100
+Marcus\t04.06.2026\t23\t9000\tFIBER 100
+Marcus\t04.06.2026\t23\t5000\tFIBER 20
+Alijan\t04.06.2026\t23\t9000\tFiber 100
+Arion\t04.06.2026\t23\t9000\tFiber 100
+Andreas\t04.06.2026\t23\t12000\tFiber 400
+Nizar\t04.06.2026\t23\t12000\tFiber 200
+Nizar\t04.06.2026\t23\t750\twifi connect
+Aleksandra\t04.06.2026\t23\t9000\tFiber 100
+Kalle\t05.06.2026\t0\t2750\tFrihet Start
+Alijan\t05.06.2026\t23\t5000\tFiber 20
+Sander\t05.06.2026\t23\t2000\ttbb 100
+Andreas\t05.06.2026\t23\t9000\tFiber 100
+Andreas\t05.06.2026\t23\t7000\tFiber 60
+Alijan\t06.06.2026\t19\t12000\tFiber 200
+Omar\t07.06.2026\t24\t12000\tFIBER 400
+Marcus\t08.06.2026\t25\t9000\tFIBER 100
+Marcus\t08.06.2026\t25\t750\tWIFI
+Marcus\t08.06.2026\t25\t750\tWIFI
+Marcus\t08.06.2026\t25\t400\t5G RESERVE
+Alijan\t08.06.2026\t24\t9000\tFiber 100
+Alijan\t08.06.2026\t24\t9000\tFiber 100
+Alijan\t08.06.2026\t24\t7000\tFiber 60
+Alexander\t09.06.2026\t24\t9000\tFiber 100
+Chris\t09.06.2026\t24\t9000\tFiber 100
+Kalle\t10.06.2026\t0\t12000\tFIBER 200
+Kalle\t10.06.2026\t0\t12000\tFIBER 200
+Kalle\t10.06.2026\t0\t12000\tFIBER 200
+Kalle\t10.06.2026\t0\t750\tWIFI INNE
+Alijan\t10.06.2026\t24\t7000\tFiber 60
+Alijan\t10.06.2026\t24\t750\tWifi Connect
+Alexander\t10.06.2026\t24\t7000\tFiber 60
+Chris\t10.06.2026\t24\t2000\tTBB 40
+Jonas\t10.06.2026\t24\t5000\tFiber 20
+Jonas\t10.06.2026\t24\t750\tWifi connect inne
+Alijan\t11.06.2026\t24\t12000\tFiber 200
+Jonas\t11.06.2026\t24\t9000\tFiber 100
+Kalle\t12.06.2026\t0\t12000\tFIBER 200
+Kalle\t12.06.2026\t0\t12000\tFIBER 200
+Kalle\t12.06.2026\t0\t12000\tFIBER 200
+Kalle\t12.06.2026\t0\t750\tWIFI INNE
+Kalle\t12.06.2026\t0\t750\tWIFI INNE
+Kalle\t12.06.2026\t0\t750\tWIFI INNE
+Marcus\t12.06.2026\t25\t9000\tFIBER 100
+Marcus\t12.06.2026\t25\t9000\tFIBER 100
+Alijan\t12.06.2026\t24\t9000\tFiber 100
+Arion\t12.06.2026\t24\t9000\tFiber 100
+Sander\t12.06.2026\t24\t12000\tfiber 1000
+Sander\t12.06.2026\t24\t5500\tfiber 20
+Jonas\t12.06.2026\t24\t12000\tFiber 200
+Andreas\t12.06.2026\t24\t12000\tFiber 1000
+Marcus\t15.06.2026\t25\t750\tWIFI
+Marcus\t15.06.2026\t25\t750\tWIFI
+Marcus\t15.06.2026\t25\t700\tWIFI LEAD`;
+
+let allRows=[];
+
+function parseRows(txt){
+  const lines=txt.trim().split('\n').filter(l=>l.trim());
+  const rows=[];
+  let start=lines[0]&&lines[0].toLowerCase().includes('consultant')?1:0;
+  for(let i=start;i<lines.length;i++){
+    const c=lines[i].split('\t');
+    if(c.length<5) continue;
+    const name=c[0].trim();const dateStr=c[1].trim();
+    const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+    const product=c[4].trim();
+    if(!name) continue;
+    rows.push({name,dateStr,value,product});
+  }
+  return rows;
+}
+
+function isFiber(p){return p.toUpperCase().includes('FIBER');}
+function isActive(n){return ACTIVE_SELLERS.includes(n.toLowerCase());}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function kr(n){return new Intl.NumberFormat('nb-NO',{maximumFractionDigits:0}).format(n)+' kr';}
+function getAvatarColor(name){let h=0;for(let i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))%AVATAR_COLORS.length;return AVATAR_COLORS[h];}
+function getDisplayName(n){return DISPLAY_NAMES[n.toLowerCase()]||n;}
+function parseDate(ds){const p=ds.split('.');if(p.length===3)return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));return new Date(0);}
+
+function getMonthKey(ds){const p=ds.split('.');if(p.length===3)return p[1]+'.'+p[2];return '';}
+function getMonthLabel(key){const mn=['','Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];const[mm,yy]=key.split('.');return (mn[parseInt(mm)]||mm)+' '+yy;}
+
+function toggleAdd(){
+  const p=document.getElementById('add-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+
+function addData(){
+  const txt=document.getElementById('paste-area').value;
+  const rows=parseRows(txt);
+  if(!rows.length){alert('Ingen gyldige rader funnet.');return;}
+  allRows=allRows.concat(rows);
+  document.getElementById('paste-area').value='';
+  document.getElementById('add-panel').style.display='none';
+  render();
+}
+
+function resetData(){
+  if(!confirm('Nullstille alle data og starte på nytt?')) return;
+  allRows=parseRows(INITIAL_DATA);
+  render();
+}
+
+function render(){
+  const months=[...new Set(allRows.map(r=>getMonthKey(r.dateStr)).filter(Boolean))].sort();
+  const latestMonth=months[months.length-1]||'06.2026';
+  const mLabel=getMonthLabel(latestMonth);
+  document.getElementById('month-badge').textContent=mLabel;
+  document.getElementById('lb-title').textContent='Leaderboard — '+mLabel;
+  document.getElementById('row-count').textContent=allRows.length+' rader';
+
+  const activeRows=allRows.filter(r=>isActive(r.name));
+  const mRows=activeRows.filter(r=>getMonthKey(r.dateStr)===latestMonth);
+
+  const sellerData=ACTIVE_SELLERS.map(sk=>{
+    const rows=mRows.filter(r=>r.name.toLowerCase()===sk);
+    return{key:sk,name:getDisplayName(sk),salg:rows.filter(r=>isFiber(r.product)).length,omset:rows.reduce((a,r)=>a+r.value,0),rows};
+  });
+  const withData=sellerData.filter(s=>s.salg>0||s.omset>0).sort((a,b)=>b.salg-a.salg||b.omset-a.omset);
+  const noData=sellerData.filter(s=>s.salg===0&&s.omset===0);
+  const sorted=[...withData,...noData];
+
+  const teamOmset=sorted.reduce((a,s)=>a+s.omset,0);
+  const teamSalg=sorted.reduce((a,s)=>a+s.salg,0);
+  const snitt=sorted.length?Math.round(teamOmset/sorted.length):0;
+  const foran=sorted.filter(s=>s.salg>=SALG_MAL||s.omset>=OMSET_MAL).length;
+
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="stat-card sc-blue"><div class="stat-icon"><i class="ti ti-currency-dollar"></i></div><div class="stat-label">Totalt salg</div><div class="stat-value">${kr(teamOmset)}</div><div class="stat-sub">Total omsetning ${mLabel}</div></div>
+    <div class="stat-card sc-green"><div class="stat-icon"><i class="ti ti-chart-bar"></i></div><div class="stat-label">Totalt antall salg</div><div class="stat-value">${teamSalg}</div><div class="stat-sub">Antall FIBER-salg</div></div>
+    <div class="stat-card sc-amber"><div class="stat-icon"><i class="ti ti-users"></i></div><div class="stat-label">Snitt per selger</div><div class="stat-value">${kr(snitt)}</div><div class="stat-sub">Gjennomsnittlig omsetning</div></div>
+    <div class="stat-card sc-purple"><div class="stat-icon"><i class="ti ti-target"></i></div><div class="stat-label">På mål (8 salg)</div><div class="stat-value">${foran} <span style="font-size:16px;color:rgba(255,255,255,.3)">/ ${sorted.length}</span></div><div class="stat-sub">Selgere på mål</div></div>
+  `;
+
+  document.getElementById('leaderboard').innerHTML=sorted.map((s,i)=>{
+    const pct=Math.min(Math.round(s.salg/SALG_MAL*100),100);
+    const [bg,fg]=getAvatarColor(s.name);
+    const rc=i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const rankEl=i===0?`<span class="rank r1"><i class="ti ti-crown"></i></span>`:i===1?`<span class="rank r2">2</span>`:i===2?`<span class="rank r3">3</span>`:`<span class="rank rn">${i+1}</span>`;
+    const bCls=pct>=100?'b-green':pct>=50?'b-yellow':'b-red';
+    const bTxt=pct>=100?'På mål':pct>=50?'På vei':'Under mål';
+    const barClr=pct>=100?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+    return`<div class="lb-row ${rc}">${rankEl}<div class="seller-info"><div class="av" style="background:${fg};color:${bg}">${initials(s.name)}</div><span class="sname">${s.name}</span></div><div class="cell-num">${s.salg}</div><div class="cell-num">${kr(s.omset)}</div><div class="prog-wrap"><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${barClr}"></div></div><span class="prog-pct" style="color:${barClr}">${pct}%</span></div><div style="text-align:right"><span class="badge-sm ${bCls}">${bTxt}</span></div></div>`;
+  }).join('');
+
+  const best=withData[0];
+  if(best){
+    const [bg,fg]=getAvatarColor(best.name);
+    document.getElementById('best-card').innerHTML=`<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px"><i class="ti ti-star"></i> Leder denne måneden</div><div class="best-av" style="background:${fg};color:${bg}">${initials(best.name)}</div><div class="best-name">${best.name}</div><div class="best-sub">${best.salg} FIBER-salg i ${mLabel}</div><div class="best-stat">${kr(best.omset)}</div><div class="best-lbl">Total omsetning</div>`;
+  }
+
+  const recent=[...activeRows].sort((a,b)=>parseDate(b.dateStr)-parseDate(a.dateStr)).slice(0,6);
+  document.getElementById('activity').innerHTML=recent.map(r=>`<div class="act-item"><div class="act-dot ${isFiber(r.product)?'g':''}"></div><div style="flex:1;min-width:0"><div class="act-name">${getDisplayName(r.name)}</div><div class="act-det">${r.product} — ${r.dateStr}</div></div><div class="act-val">${kr(r.value)}</div></div>`).join('');
+
+  const barData=[...withData].slice(0,12);
+  const maxO=Math.max(...barData.map(s=>s.omset),1);
+  document.getElementById('bar-chart').innerHTML=barData.map(s=>{
+    const h=Math.max(Math.round(s.omset/maxO*72),4);
+    const [bg]=getAvatarColor(s.name);
+    return`<div class="bar-col"><div class="bar-val">${Math.round(s.omset/1000)}k</div><div class="bar" style="height:${h}px;background:${bg}"></div><div class="bar-lbl">${s.name.split(' ')[0]}</div></div>`;
+  }).join('');
+}
+
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleDateString('nb-NO',{weekday:'long',day:'numeric',month:'long'})+' — '+now.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});
+}
+
+allRows=parseRows(INITIAL_DATA);
+render();
+updateClock();
+setInterval(updateClock,30000);
+</script>
+</body>
+</html>
