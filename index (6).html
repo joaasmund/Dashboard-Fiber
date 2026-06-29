@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Salgsdashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e1a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid rgba(255,255,255,.07)}
+.logo{font-size:15px;font-weight:700;color:#fff}
+.top-right{display:flex;align-items:center;gap:14px}
+.clock{font-size:13px;color:rgba(255,255,255,.4)}
+.month-badge{background:rgba(99,102,241,.18);color:#a5b4fc;font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;border:1px solid rgba(99,102,241,.3)}
+.sync-wrap{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.3)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+.sync-dot.err{background:#ef4444;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid}
+.btn-blue{background:rgba(99,102,241,.18);color:#a5b4fc;border-color:rgba(99,102,241,.3)}
+.btn-pink{background:rgba(236,72,153,.15);color:#f472b6;border-color:rgba(236,72,153,.3)}
+.main{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;padding:16px 28px 0}
+.sc{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc1::before{background:linear-gradient(90deg,#6366f1,#818cf8)}
+.sc2::before{background:linear-gradient(90deg,#10b981,#34d399)}
+.sc3::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.sc4::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+.sc-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase}
+.sc-val{font-size:26px;font-weight:800;line-height:1.1}
+.sc-sub{font-size:11px;color:rgba(255,255,255,.35)}
+.sc-icon{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.sc1 .sc-icon{background:rgba(99,102,241,.15);color:#818cf8}
+.sc2 .sc-icon{background:rgba(16,185,129,.15);color:#34d399}
+.sc3 .sc-icon{background:rgba(245,158,11,.15);color:#fbbf24}
+.sc4 .sc-icon{background:rgba(139,92,246,.15);color:#a78bfa}
+.content{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px 28px 20px}
+.left-col{display:flex;flex-direction:column;gap:12px}
+.panel{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 22px}
+.panel-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.lb-head{display:grid;grid-template-columns:40px 1fr 90px 110px 130px 90px;gap:8px;padding:0 8px 8px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px}
+.lb-hc{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);letter-spacing:.08em;text-transform:uppercase}
+.lb-hc:nth-child(n+3){text-align:right}
+.lb-row{display:grid;grid-template-columns:40px 1fr 90px 110px 130px 90px;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;cursor:pointer;transition:background .15s}
+.lb-row:hover{background:rgba(255,255,255,.05)}
+.lb-row.t1{background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.12)}
+.lb-row.t2{background:rgba(156,163,175,.04);border:1px solid rgba(156,163,175,.1)}
+.lb-row.t3{background:rgba(180,83,9,.04);border:1px solid rgba(180,83,9,.12)}
+.rank{font-size:14px;font-weight:700;text-align:center}
+.r1{color:#fbbf24}.r2{color:#9ca3af}.r3{color:#b45309}.rn{color:rgba(255,255,255,.25);font-size:13px}
+.si{display:flex;align-items:center;gap:10px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.sname{font-size:13px;font-weight:600;color:#f1f5f9}
+.cn{font-size:13px;font-weight:700;text-align:right;color:#f1f5f9}
+.pw{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.pbg{width:70px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.pf{height:100%;border-radius:3px}
+.pp{font-size:11px;font-weight:600;min-width:32px;text-align:right}
+.bdg{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-align:center}
+.bg{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+.by{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+.br{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.cf{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(245,158,11,.2);color:#fbbf24;font-size:9px;margin-left:5px}
+.right-col{display:flex;flex-direction:column;gap:12px}
+.best-card{background:linear-gradient(135deg,#1e1b4b,#111827);border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:20px;text-align:center}
+.best-av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin:0 auto 12px;border:2px solid rgba(250,204,21,.4)}
+.best-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.best-sub{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:12px}
+.best-stat{font-size:28px;font-weight:800;color:#fbbf24;line-height:1}
+.best-lbl{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
+.act-panel{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 20px;flex:1}
+.act-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:7px;height:7px;border-radius:50%;background:#6366f1;margin-top:5px;flex-shrink:0}
+.act-dot.g{background:#10b981}
+.act-name{font-size:12px;font-weight:600;color:#f1f5f9}
+.act-det{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px}
+.act-val{font-size:12px;font-weight:700;color:#a5b4fc;margin-left:auto;white-space:nowrap}
+/* Modals */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
+.ov.open{display:flex}
+.modal{background:#1a2236;border:1px solid rgba(99,102,241,.3);border-radius:14px;padding:22px;width:440px}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:4px;color:#a5b4fc}
+.modal p{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:14px}
+.modal textarea{width:100%;min-height:110px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:monospace;font-size:12px;padding:10px;resize:vertical;margin-bottom:12px}
+.modal textarea::placeholder{color:rgba(255,255,255,.2)}
+.mbtns{display:flex;gap:8px;align-items:center}
+.mbtn{border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid}
+.mb-blue{background:rgba(99,102,241,.2);color:#a5b4fc;border-color:rgba(99,102,241,.4)}
+.mb-cancel{background:transparent;color:rgba(255,255,255,.35);border-color:rgba(255,255,255,.1)}
+.mb-red{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.25)}
+.mb-amber{background:rgba(245,158,11,.1);color:#fbbf24;border-color:rgba(245,158,11,.25)}
+.mb-pink{background:rgba(236,72,153,.15);color:#f472b6;border-color:rgba(236,72,153,.35)}
+.smsg{font-size:11px;margin-top:10px;color:rgba(255,255,255,.4);min-height:16px}
+.chip{font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:4px 12px;border-radius:20px}
+.ef{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.el{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
+.eh{font-size:10px;color:rgba(255,255,255,.2);margin-top:2px}
+.ei{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:18px;font-weight:700;padding:10px 12px;font-family:'Inter',sans-serif;width:100%;text-align:center}
+.ei:focus{outline:none;border-color:rgba(99,102,241,.5)}
+.ei.ov2{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)}
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+/* Announcement */
+.ann-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+.ann-ov.show{display:flex}
+.ann-box{background:linear-gradient(135deg,#1e1b4b,#111827);border:2px solid rgba(250,204,21,.35);border-radius:20px;padding:44px 52px;text-align:center;position:relative;max-width:520px;width:90%;animation:popIn .3s ease}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.ann-x{position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer}
+.ann-x:hover{color:#fff}
+.ann-emoji{font-size:44px;margin-bottom:14px}
+.ann-title{font-size:26px;font-weight:900;color:#fbbf24;letter-spacing:.03em;line-height:1.25;margin-bottom:10px}
+.ann-body{font-size:15px;color:rgba(255,255,255,.55);line-height:1.5}
+.af{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.al{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
+.ai{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;font-weight:600;padding:9px 12px;font-family:'Inter',sans-serif;width:100%}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><i class="ti ti-chart-bar"></i> Salgsdashboard</div>
+  <span class="month-badge" id="month-badge">Laster...</span>
+  <div class="top-right">
+    <div class="sync-wrap"><span class="sync-dot" id="sync-dot"></span><span id="sync-lbl">Kobler til...</span></div>
+    <div class="clock" id="clock"></div>
+    <button class="btn btn-pink" onclick="openAnnAdmin()"><i class="ti ti-speakerphone"></i> Kunngjøring</button>
+    <button class="btn btn-blue" onclick="openAddModal()"><i class="ti ti-plus"></i> Legg til data</button>
+  </div>
+</div>
+
+<div class="main" id="stat-cards"></div>
+<div class="content">
+  <div class="left-col">
+    <div class="panel">
+      <div class="panel-title" id="lb-title">Leaderboard</div>
+      <div class="lb-head">
+        <div class="lb-hc">Plass</div><div class="lb-hc">Selger</div>
+        <div class="lb-hc">FIBER-salg</div><div class="lb-hc">Omsetning</div>
+        <div class="lb-hc">Fremgang</div><div class="lb-hc">Status</div>
+      </div>
+      <div id="leaderboard"></div>
+    </div>
+  </div>
+  <div class="right-col">
+    <div class="best-card" id="best-card"></div>
+    <div class="act-panel">
+      <div class="panel-title">Siste registreringer</div>
+      <div id="activity"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Kunngjøring display -->
+<div class="ann-ov" id="ann-ov">
+  <div class="ann-box">
+    <button class="ann-x" onclick="document.getElementById('ann-ov').classList.remove('show')">✕</button>
+    <div class="ann-emoji" id="ann-emoji">📢</div>
+    <div class="ann-title" id="ann-title"></div>
+    <div class="ann-body" id="ann-body"></div>
+  </div>
+</div>
+
+<!-- Kunngjøring admin -->
+<div class="ov" id="ann-modal">
+  <div class="modal">
+    <h3><i class="ti ti-speakerphone"></i> Kunngjøring</h3>
+    <p>Dukker opp på alle skjermer med en gang du publiserer.</p>
+    <div class="af"><span class="al">Emoji</span><input class="ai" id="ann-e" type="text" placeholder="🎉" maxlength="4" style="width:70px;font-size:22px;text-align:center"></div>
+    <div class="af"><span class="al">Tittel</span><input class="ai" id="ann-t" type="text" placeholder="F.eks. KALLE HAR 10 SALG!"></div>
+    <div class="af"><span class="al">Beskrivelse (valgfritt)</span><input class="ai" id="ann-b" type="text" placeholder="Gratulerer! 🥳"></div>
+    <div class="mbtns">
+      <button class="mbtn mb-pink" onclick="publishAnn()"><i class="ti ti-broadcast"></i> Publiser</button>
+      <button class="mbtn mb-cancel" onclick="closeModal('ann-modal')">Avbryt</button>
+      <button class="mbtn mb-red" id="del-ann-btn" onclick="deleteAnn()" style="display:none;margin-left:auto"><i class="ti ti-trash"></i> Fjern</button>
+    </div>
+    <div class="smsg" id="ann-msg"></div>
+  </div>
+</div>
+
+<!-- Legg til data -->
+<div class="ov" id="add-modal">
+  <div class="modal">
+    <h3><i class="ti ti-table-import"></i> Legg til salgsdata</h3>
+    <p>Lim inn tab-separert data fra Excel. Alle TV-er oppdateres automatisk.</p>
+    <textarea id="paste-area" placeholder="Consultant	Date of sale	Week	Value	Product"></textarea>
+    <div class="mbtns">
+      <button class="mbtn mb-blue" onclick="addData()"><i class="ti ti-upload"></i> Last opp</button>
+      <button class="mbtn mb-cancel" onclick="closeModal('add-modal')">Avbryt</button>
+      <span class="chip" id="row-count">—</span>
+      <button class="mbtn mb-red" onclick="resetData()" style="margin-left:auto"><i class="ti ti-trash"></i> Nullstill</button>
+    </div>
+    <div class="smsg" id="add-msg"></div>
+  </div>
+</div>
+
+<!-- Rediger selger -->
+<div class="ov" id="edit-modal">
+  <div class="modal">
+    <h3 id="edit-title"><i class="ti ti-pencil"></i> Rediger</h3>
+    <p>Skriv inn riktige tall direkte. La feltet stå tomt for å bruke faktiske data.</p>
+    <div class="egrid">
+      <div class="ef">
+        <span class="el">FIBER-salg</span>
+        <input class="ei" id="edit-salg" type="number" min="0" placeholder="—">
+        <span class="eh">Faktisk: <span id="edit-salg-a">—</span></span>
+      </div>
+      <div class="ef">
+        <span class="el">Omsetning (kr)</span>
+        <input class="ei" id="edit-omset" type="number" min="0" placeholder="—">
+        <span class="eh">Faktisk: <span id="edit-omset-a">—</span></span>
+      </div>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn mb-blue" onclick="saveEdit()"><i class="ti ti-check"></i> Lagre</button>
+      <button class="mbtn mb-cancel" onclick="closeModal('edit-modal')">Avbryt</button>
+      <button class="mbtn mb-amber" id="clear-btn" onclick="clearEdit()" style="display:none;margin-left:auto"><i class="ti ti-x"></i> Fjern korrigering</button>
+    </div>
+    <div class="smsg" id="edit-msg"></div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const sb = createClient(
+  'https://pwsoebozobzgmojojtdx.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
+);
+
+const ACTIVE=['kalle','alijan','marcus','hurlen','andreas','hermelink','simen','lars','melvin','eliot','torjus','sander','omar','aleksandra','aleksander','aleksander rognstad','nizar','shifa','jonas','chris','bjørn','charlie','arion'];
+const DN={'kalle':'Kalle','alijan':'Alijan','marcus':'Marcus','hurlen':'Hurlen','andreas':'Andreas','hermelink':'Hermelink','simen':'Simen','lars':'Lars','melvin':'Melvin','eliot':'Eliot','torjus':'Torjus','sander':'Sander','omar':'Omar','aleksandra':'Aleksandra','aleksander':'Aleksander','aleksander rognstad':'Aleksander R.','nizar':'Nizar','shifa':'Shifa','jonas':'Jonas','chris':'Chris','bjørn':'Bjørn','charlie':'Charlie','arion':'Arion'};
+const AC=[['#6366f1','#1e1b4b'],['#10b981','#052e16'],['#f59e0b','#2d1d00'],['#8b5cf6','#2e1065'],['#ec4899','#500724'],['#14b8a6','#042f2e'],['#3b82f6','#1e3a5f'],['#ef4444','#450a0a'],['#a855f7','#3b0764'],['#22c55e','#052e16'],['#06b6d4','#082f49'],['#f97316','#431407'],['#84cc16','#1a2e05'],['#e879f9','#4a044e']];
+const SMAL=8,OMAL=80000;
+
+let allRows=[],corrections=[],activeAnn=null,currentSeller=null,currentMK=null;
+
+const gac=n=>{let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%AC.length;return AC[h];};
+const gdn=n=>DN[n.toLowerCase()]||n;
+const ini=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const kr=n=>new Intl.NumberFormat('nb-NO',{maximumFractionDigits:0}).format(n)+' kr';
+const isF=p=>p.toUpperCase().includes('FIBER');
+const isA=n=>ACTIVE.includes(n.toLowerCase());
+const pd=ds=>{const p=ds.split('.');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):new Date(0);};
+const gmk=ds=>{const p=ds.split('.');return p.length===3?p[1]+'.'+p[2]:'';};
+const gml=k=>{const m=['','Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];const[mm,yy]=k.split('.');return(m[+mm]||mm)+' '+yy;};
+const setSync=ok=>{document.getElementById('sync-dot').className='sync-dot'+(ok?'':' err');document.getElementById('sync-lbl').textContent=ok?'Live':'Frakoblet';};
+
+// Modal helpers
+window.closeModal=id=>document.getElementById(id).classList.remove('open');
+const openM=id=>document.getElementById(id).classList.add('open');
+['ann-modal','add-modal','edit-modal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))window.closeModal(id);});
+});
+
+// Parse TSV
+const parseTSV=txt=>{
+  const lines=txt.trim().split('\n').filter(l=>l.trim());
+  const rows=[];
+  let s=lines[0]&&lines[0].toLowerCase().includes('consultant')?1:0;
+  for(let i=s;i<lines.length;i++){
+    const c=lines[i].split('\t');if(c.length<5)continue;
+    const consultant=c[0].trim(),date_of_sale=c[1].trim(),week=c[2].trim();
+    const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+    const product=c[4].trim();
+    if(!consultant)continue;
+    rows.push({consultant,date_of_sale,week,value,product});
+  }
+  return rows;
+};
+
+// Load data
+async function loadData(){
+  const {data,error}=await sb.from('sales').select('*');
+  if(error){setSync(false);return;}
+  setSync(true);
+  allRows=(data||[]).map(r=>({name:r.consultant,dateStr:r.date_of_sale,value:r.value,product:r.product}));
+  document.getElementById('row-count').textContent=allRows.length+' rader i DB';
+  render();
+}
+async function loadCorrections(){
+  const {data}=await sb.from('corrections').select('*');
+  corrections=data||[];render();
+}
+async function loadAnn(){
+  const {data}=await sb.from('announcements').select('*').order('created_at',{ascending:false}).limit(1);
+  const ann=data&&data.length?data[0]:null;
+  activeAnn=ann;
+  if(ann){
+    document.getElementById('ann-emoji').textContent=ann.emoji||'📢';
+    document.getElementById('ann-title').textContent=ann.title||'';
+    document.getElementById('ann-body').textContent=ann.body||'';
+    document.getElementById('ann-ov').classList.add('show');
+  } else {
+    document.getElementById('ann-ov').classList.remove('show');
+  }
+}
+
+// Realtime
+sb.channel('s1').on('postgres_changes',{event:'*',schema:'public',table:'sales'},loadData).subscribe(s=>setSync(s==='SUBSCRIBED'));
+sb.channel('s2').on('postgres_changes',{event:'*',schema:'public',table:'corrections'},loadCorrections).subscribe();
+sb.channel('s3').on('postgres_changes',{event:'*',schema:'public',table:'announcements'},loadAnn).subscribe();
+
+// Add data
+window.openAddModal=()=>openM('add-modal');
+window.addData=async()=>{
+  const txt=document.getElementById('paste-area').value;
+  const rows=parseTSV(txt);
+  if(!rows.length){alert('Ingen gyldige rader.');return;}
+  const msg=document.getElementById('add-msg');
+  msg.textContent='Laster opp '+rows.length+' rader...';
+  const {error}=await sb.from('sales').insert(rows);
+  if(error){msg.textContent='Feil: '+error.message;return;}
+  document.getElementById('paste-area').value='';
+  msg.textContent='✓ '+rows.length+' rader lastet opp!';
+  setTimeout(()=>{msg.textContent='';window.closeModal('add-modal');},2000);
+};
+window.resetData=async()=>{
+  if(!confirm('Slette ALLE salgsdata?'))return;
+  const msg=document.getElementById('add-msg');
+  msg.textContent='Sletter...';
+  await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  msg.textContent='✓ Slettet.';
+  setTimeout(()=>{msg.textContent='';},2000);
+};
+
+// Announcements
+window.openAnnAdmin=()=>{
+  document.getElementById('ann-e').value=activeAnn?activeAnn.emoji||'':'';
+  document.getElementById('ann-t').value=activeAnn?activeAnn.title||'':'';
+  document.getElementById('ann-b').value=activeAnn?activeAnn.body||'':'';
+  document.getElementById('ann-msg').textContent='';
+  document.getElementById('del-ann-btn').style.display=activeAnn?'inline-flex':'none';
+  openM('ann-modal');
+};
+window.publishAnn=async()=>{
+  const emoji=document.getElementById('ann-e').value.trim()||'📢';
+  const title=document.getElementById('ann-t').value.trim();
+  const body=document.getElementById('ann-b').value.trim();
+  const msg=document.getElementById('ann-msg');
+  if(!title){msg.textContent='Tittel er påkrevd.';return;}
+  msg.textContent='Publiserer...';
+  await sb.from('announcements').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  const {error}=await sb.from('announcements').insert({emoji,title,body:body||null});
+  if(error){msg.textContent='Feil: '+error.message;return;}
+  msg.textContent='✓ Publisert!';
+  setTimeout(()=>{window.closeModal('ann-modal');},1500);
+};
+window.deleteAnn=async()=>{
+  if(!confirm('Fjerne kunngjøringen?'))return;
+  await sb.from('announcements').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  window.closeModal('ann-modal');
+};
+
+// Edit seller
+window.openEditModal=sk=>{
+  currentSeller=sk;
+  const mRows=allRows.filter(r=>isA(r.name)&&gmk(r.dateStr)===currentMK&&r.name.toLowerCase()===sk);
+  const actualSalg=mRows.filter(r=>isF(r.product)).length;
+  const actualOmset=mRows.reduce((a,r)=>a+r.value,0);
+  const existing=corrections.find(c=>c.consultant===sk&&c.month_key===currentMK);
+  document.getElementById('edit-title').innerHTML=`<i class="ti ti-pencil"></i> Rediger ${gdn(sk)}`;
+  document.getElementById('edit-salg-a').textContent=actualSalg+' salg';
+  document.getElementById('edit-omset-a').textContent=kr(actualOmset);
+  const si=document.getElementById('edit-salg');
+  const oi=document.getElementById('edit-omset');
+  si.value=existing&&existing.salg_override!==null?existing.salg_override:'';
+  oi.value=existing&&existing.omset_override!==null?existing.omset_override:'';
+  si.className='ei'+(existing&&existing.salg_override!==null?' ov2':'');
+  oi.className='ei'+(existing&&existing.omset_override!==null?' ov2':'');
+  document.getElementById('clear-btn').style.display=existing?'inline-flex':'none';
+  document.getElementById('edit-msg').textContent='';
+  openM('edit-modal');
+};
+window.saveEdit=async()=>{
+  const sk=currentSeller,lm=currentMK;
+  const sv=document.getElementById('edit-salg').value;
+  const ov=document.getElementById('edit-omset').value;
+  const salg_override=sv!==''?+sv:null;
+  const omset_override=ov!==''?+ov:null;
+  const msg=document.getElementById('edit-msg');
+  if(salg_override===null&&omset_override===null){msg.textContent='Skriv inn minst ett tall.';return;}
+  msg.textContent='Lagrer...';
+  const existing=corrections.find(c=>c.consultant===sk&&c.month_key===lm);
+  let error;
+  if(existing){({error}=await sb.from('corrections').update({salg_override,omset_override}).eq('id',existing.id));}
+  else{({error}=await sb.from('corrections').insert({consultant:sk,month_key:lm,salg_override,omset_override}));}
+  if(error){msg.textContent='Feil: '+error.message;return;}
+  msg.textContent='✓ Lagret!';
+  setTimeout(()=>{window.closeModal('edit-modal');},1200);
+};
+window.clearEdit=async()=>{
+  if(!confirm('Fjerne korrigeringen?'))return;
+  const existing=corrections.find(c=>c.consultant===currentSeller&&c.month_key===currentMK);
+  if(existing)await sb.from('corrections').delete().eq('id',existing.id);
+  window.closeModal('edit-modal');
+};
+
+function render(){
+  const months=[...new Set(allRows.map(r=>gmk(r.dateStr)).filter(Boolean))].sort();
+  const lm=months[months.length-1]||'06.2026';
+  currentMK=lm;
+  const ml=gml(lm);
+  document.getElementById('month-badge').textContent=ml;
+  document.getElementById('lb-title').textContent='Leaderboard — '+ml+' (klikk for å redigere)';
+
+  const aRows=allRows.filter(r=>isA(r.name));
+  const mRows=aRows.filter(r=>gmk(r.dateStr)===lm);
+
+  const sd=ACTIVE.map(sk=>{
+    const rows=mRows.filter(r=>r.name.toLowerCase()===sk);
+    const aS=rows.filter(r=>isF(r.product)).length;
+    const aO=rows.reduce((a,r)=>a+r.value,0);
+    const c=corrections.find(c=>c.consultant===sk&&c.month_key===lm);
+    return{key:sk,name:gdn(sk),salg:c&&c.salg_override!==null?c.salg_override:aS,omset:c&&c.omset_override!==null?c.omset_override:aO,hasCorr:!!c};
+  });
+  const wd=sd.filter(s=>s.salg>0||s.omset>0).sort((a,b)=>b.salg-a.salg||b.omset-a.omset);
+  const sorted=[...wd,...sd.filter(s=>s.salg===0&&s.omset===0)];
+  const tO=sorted.reduce((a,s)=>a+s.omset,0);
+  const tS=sorted.reduce((a,s)=>a+s.salg,0);
+  const snitt=sorted.length?Math.round(tO/sorted.length):0;
+  const foran=sorted.filter(s=>s.salg>=SMAL||s.omset>=OMAL).length;
+
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="sc sc1"><div class="sc-icon"><i class="ti ti-currency-dollar"></i></div><div class="sc-lbl">Total omsetning</div><div class="sc-val">${kr(tO)}</div><div class="sc-sub">${ml}</div></div>
+    <div class="sc sc2"><div class="sc-icon"><i class="ti ti-chart-bar"></i></div><div class="sc-lbl">FIBER-salg</div><div class="sc-val">${tS}</div><div class="sc-sub">Antall totalt</div></div>
+    <div class="sc sc3"><div class="sc-icon"><i class="ti ti-users"></i></div><div class="sc-lbl">Snitt per selger</div><div class="sc-val">${kr(snitt)}</div><div class="sc-sub">Omsetning</div></div>
+    <div class="sc sc4"><div class="sc-icon"><i class="ti ti-target"></i></div><div class="sc-lbl">På mål (8 salg)</div><div class="sc-val">${foran}<span style="font-size:16px;color:rgba(255,255,255,.3)"> / ${sorted.length}</span></div><div class="sc-sub">Selgere foran</div></div>`;
+
+  document.getElementById('leaderboard').innerHTML=sorted.map((s,i)=>{
+    const pct=Math.min(Math.round(s.salg/SMAL*100),100);
+    const [bg,fg]=gac(s.name);
+    const rc=i===0?'t1':i===1?'t2':i===2?'t3':'';
+    const rk=i===0?`<span class="rank r1"><i class="ti ti-crown"></i></span>`:i===1?`<span class="rank r2">2</span>`:i===2?`<span class="rank r3">3</span>`:`<span class="rank rn">${i+1}</span>`;
+    const bc=pct>=100?'bg':pct>=50?'by':'br';
+    const bt=pct>=100?'På mål':pct>=50?'På vei':'Under mål';
+    const clr=pct>=100?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+    return`<div class="lb-row ${rc}" onclick="openEditModal('${s.key}')">${rk}<div class="si"><div class="av" style="background:${fg};color:${bg}">${ini(s.name)}</div><span class="sname">${s.name}</span>${s.hasCorr?'<span class="cf"><i class="ti ti-pencil"></i></span>':''}</div><div class="cn">${s.salg}</div><div class="cn">${kr(s.omset)}</div><div class="pw"><div class="pbg"><div class="pf" style="width:${pct}%;background:${clr}"></div></div><span class="pp" style="color:${clr}">${pct}%</span></div><div style="text-align:right"><span class="bdg ${bc}">${bt}</span></div></div>`;
+  }).join('');
+
+  const best=wd[0];
+  if(best){
+    const [bg,fg]=gac(best.name);
+    document.getElementById('best-card').innerHTML=`<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px"><i class="ti ti-star"></i> Leder denne måneden</div><div class="best-av" style="background:${fg};color:${bg}">${ini(best.name)}</div><div class="best-name">${best.name}</div><div class="best-sub">${best.salg} FIBER-salg i ${ml}</div><div class="best-stat">${kr(best.omset)}</div><div class="best-lbl">Total omsetning</div>`;
+  }
+
+  const recent=[...allRows.filter(r=>isA(r.name))].sort((a,b)=>pd(b.dateStr)-pd(a.dateStr)).slice(0,8);
+  document.getElementById('activity').innerHTML=recent.map(r=>`<div class="act-item"><div class="act-dot ${isF(r.product)?'g':''}"></div><div style="flex:1;min-width:0"><div class="act-name">${gdn(r.name)}</div><div class="act-det">${r.product} — ${r.dateStr}</div></div><div class="act-val">${kr(r.value)}</div></div>`).join('');
+}
+
+function tick(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleDateString('nb-NO',{weekday:'long',day:'numeric',month:'long'})+' — '+now.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});
+}
+
+loadData();loadCorrections();loadAnn();tick();setInterval(tick,30000);
+</script>
+</body>
+</html>
