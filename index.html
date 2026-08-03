@@ -251,10 +251,10 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
 );
 
-const ACTIVE=['kalle','alijan','marcus','hurlen','andreas','hermelink','simen','lars','melvin','eliot','torjus','sander','omar','aleksandra','rognstad','nizar','shifa','jonas','chris','bjørn','charlie','arion'];
-const DN={'kalle':'Kalle','alijan':'Alijan','marcus':'Marcus','hurlen':'Hurlen','andreas':'Andreas','hermelink':'Hermelink','simen':'Simen','lars':'Lars','melvin':'Melvin','eliot':'Eliot','torjus':'Torjus','sander':'Sander','omar':'Omar','aleksandra':'Aleksandra','rognstad':'Rognstad','nizar':'Nizar','shifa':'Shifa','jonas':'Jonas','chris':'Chris','bjørn':'Bjørn','charlie':'Charlie','arion':'Arion'};
+const ACTIVE=['kalle','alijan','marcus','andreas','simen','melvin','sander','omar','aleksandra','rognstad','nizar','shifa','jonas','chris','bjørn','charlie','arion','arman','oskar'];
+const DN={'kalle':'Kalle','alijan':'Alijan','marcus':'Marcus','andreas':'Andreas','simen':'Simen','melvin':'Melvin','sander':'Sander','omar':'Omar','aleksandra':'Aleksandra','rognstad':'Rognstad','nizar':'Nizar','shifa':'Shifa','jonas':'Jonas','chris':'Chris','bjørn':'Bjørn','charlie':'Charlie','arion':'Arion','arman':'Arman','oskar':'Oskar'};
 // Aliaser: navnevarianter i rådata som skal kobles til samme aktive selger
-const ALIAS={'alexander':'rognstad','aleksander':'rognstad','aleksander rognstad':'rognstad','fredrik hermelink':'hermelink','fredrik hurlen':'hurlen'};
+const ALIAS={'alexander':'rognstad','aleksander':'rognstad','aleksander rognstad':'rognstad'};
 const normName=n=>{const low=n.toLowerCase().trim();return ALIAS[low]||low;};
 const AC=[['#6366f1','#1e1b4b'],['#10b981','#052e16'],['#f59e0b','#2d1d00'],['#8b5cf6','#2e1065'],['#ec4899','#500724'],['#14b8a6','#042f2e'],['#3b82f6','#1e3a5f'],['#ef4444','#450a0a'],['#a855f7','#3b0764'],['#22c55e','#052e16'],['#06b6d4','#082f49'],['#f97316','#431407'],['#84cc16','#1a2e05'],['#e879f9','#4a044e']];
 const SMAL=8,OMAL=80000;
