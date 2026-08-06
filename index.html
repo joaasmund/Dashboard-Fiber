@@ -492,7 +492,9 @@ function tick(){
   document.getElementById('clock').textContent=now.toLocaleDateString('nb-NO',{weekday:'short',day:'numeric',month:'short'})+' — '+now.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});
 }
 
-loadData();loadCorrections();loadAnn();tick();setInterval(tick,30000);
+loadData();loadCorrections();loadAnn();tick();
+setInterval(tick,30000);
+setInterval(()=>{loadData();loadCorrections();loadAnn();},30000);
 </script>
 </body>
 </html>
