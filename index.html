@@ -1045,6 +1045,7 @@ window.deleteAnn=async()=>{
 
 // Edit seller
 window.openEditModal=sk=>{
+  requireAdmin(()=>{
   currentSeller=sk;
   const mRows=allRows.filter(r=>getKey(r.name)===sk&&gmk(r.dateStr)===currentMK);
   const actualSalg=mRows.filter(r=>isF(r.product)).length;
@@ -1062,6 +1063,7 @@ window.openEditModal=sk=>{
   document.getElementById('clear-btn').style.display=existing?'inline-flex':'none';
   document.getElementById('edit-msg').textContent='';
   window.openM('edit-modal');
+  });
 };
 window.saveEdit=async()=>{
   const sk=currentSeller,lm=currentMK;
