@@ -2,30 +2,28 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Salgsdashboard</title>
+<title>Salgsdashboard — Telenor Bedrift Fiber Oslo</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
-
 .shell{padding:16px 26px;max-width:1680px;margin:0 auto}
-
 .titles{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
 .eyebrow{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
 .h1{font-size:34px;font-weight:900;letter-spacing:-.01em}
 .h1 .accent{background:linear-gradient(90deg,#34d399,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
 .live-pill{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:6px 14px;border-radius:20px}
-.live-pill .ld{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
-.live-pill .ld.err{background:#ef4444;animation:none}
+.ld{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;display:inline-block}
+.ld.err{background:#ef4444;animation:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.actions{display:flex;gap:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border-radius:9px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid}
+.btn-green{background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3)}
 .btn-pink{background:rgba(236,72,153,.15);color:#f472b6;border-color:rgba(236,72,153,.3)}
 .btn-blue{background:rgba(99,102,241,.18);color:#a5b4fc;border-color:rgba(99,102,241,.3)}
+.btn-amber{background:rgba(245,158,11,.12);color:#fbbf24;border-color:rgba(245,158,11,.28)}
 .top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-
-/* STAT STRIP */
 .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
 .stat-box{background:#0d1320;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
 .stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
@@ -40,12 +38,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .b4 .stat-ico{background:rgba(96,165,250,.15);color:#60a5fa}
 .stat-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase}
 .stat-val{font-size:21px;font-weight:800;line-height:1.15}
-
-/* MAIN GRID */
 .main-grid{display:grid;grid-template-columns:1fr 300px;gap:14px}
 .card{background:#0d1320;border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:20px}
-
-/* PODIUM (compact) */
 .podium-row{display:grid;grid-template-columns:1fr 1.12fr 1fr;gap:14px;align-items:end;margin-bottom:18px}
 .pod-col{display:flex;flex-direction:column;align-items:center;gap:8px}
 .pod-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;position:relative}
@@ -65,11 +59,9 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .pod-3 .pod-rank{color:#34d399}
 .pod-val{font-size:16px;font-weight:800}
 .pod-1 .pod-val{font-size:19px}
-
-/* CHASE LIST — 2 column grid, all visible */
 .chase-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin:2px 0 10px}
 .chase-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
-.chase-row{display:grid;grid-template-columns:20px 24px 1fr 70px 50px;gap:8px;align-items:center;padding:6px 6px;border-radius:8px;cursor:pointer;transition:background .15s}
+.chase-row{display:grid;grid-template-columns:20px 24px 1fr 70px 60px;gap:8px;align-items:center;padding:6px 6px;border-radius:8px;cursor:pointer;transition:background .15s}
 .chase-row:hover{background:rgba(255,255,255,.03)}
 .chase-rank{font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-align:center}
 .chase-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
@@ -77,50 +69,60 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .chase-bar-bg{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
 .chase-bar-fill{height:100%;border-radius:3px}
 .chase-val{font-size:10px;color:rgba(255,255,255,.32);text-align:right;white-space:nowrap}
-
-/* LIVE FEED */
 .feed-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
-.feed-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+.feed-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;display:inline-block}
 .feed-list{display:flex;flex-direction:column;gap:2px;max-height:620px;overflow-y:auto}
 .feed-list::-webkit-scrollbar{width:4px}
 .feed-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
-.feed-item{display:flex;align-items:center;gap:9px;padding:8px 6px;border-radius:9px;cursor:pointer}
-.feed-item:hover{background:rgba(255,255,255,.03)}
+.feed-item{display:flex;align-items:center;gap:9px;padding:8px 6px;border-radius:9px}
 .feed-av{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
 .feed-info{flex:1;min-width:0}
 .feed-name{font-size:11px;font-weight:700}
 .feed-prod{font-size:9px;color:rgba(255,255,255,.3)}
 .feed-val{font-size:11px;font-weight:800;color:#34d399;white-space:nowrap}
-
-/* MODALS */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
+/* Modals */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
 .ov.open{display:flex}
-.modal{background:#0d1320;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:22px;width:440px}
-.modal h3{font-size:14px;font-weight:700;margin-bottom:4px;color:#a5b4fc}
-.modal p{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:14px}
-.modal textarea{width:100%;min-height:110px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:monospace;font-size:12px;padding:10px;resize:vertical;margin-bottom:12px}
-.modal textarea::placeholder{color:rgba(255,255,255,.2)}
-.mbtns{display:flex;gap:8px;align-items:center}
+.modal{background:#0d1320;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:480px;max-height:90vh;overflow-y:auto}
+.modal.wide{width:700px}
+.modal.full{width:95vw;max-width:1100px}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:4px;color:#a5b4fc}
+.modal p{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:16px}
+.mbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .mbtn{border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid}
 .mb-blue{background:rgba(99,102,241,.2);color:#a5b4fc;border-color:rgba(99,102,241,.4)}
+.mb-green{background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3)}
 .mb-cancel{background:transparent;color:rgba(255,255,255,.35);border-color:rgba(255,255,255,.1)}
 .mb-red{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.25)}
 .mb-amber{background:rgba(245,158,11,.1);color:#fbbf24;border-color:rgba(245,158,11,.25)}
 .mb-pink{background:rgba(236,72,153,.15);color:#f472b6;border-color:rgba(236,72,153,.35)}
 .smsg{font-size:11px;margin-top:10px;color:rgba(255,255,255,.4);min-height:16px}
 .chip{font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:4px 12px;border-radius:20px}
-.ef{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.el{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
-.eh{font-size:10px;color:rgba(255,255,255,.2);margin-top:2px}
-.ei{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:18px;font-weight:700;padding:10px 12px;font-family:'Inter',sans-serif;width:100%;text-align:center}
-.ei:focus{outline:none;border-color:rgba(99,102,241,.5)}
-.ei.ov2{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)}
-.egrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.af{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.al{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
-.ai{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;font-weight:600;padding:9px 12px;font-family:'Inter',sans-serif;width:100%}
-
-/* ANNOUNCEMENT */
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.lbl{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
+.hint{font-size:10px;color:rgba(255,255,255,.25);margin-top:2px}
+.inp{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;padding:10px 12px;font-family:'Inter',sans-serif;width:100%}
+.inp:focus{outline:none;border-color:rgba(99,102,241,.5)}
+.sel{background:#0d1320;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;padding:10px 12px;font-family:'Inter',sans-serif;width:100%}
+.sel:focus{outline:none;border-color:rgba(99,102,241,.5)}
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.prod-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .15s}
+.prod-item:hover,.prod-item.sel-p{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.4)}
+.prod-item input{accent-color:#6366f1}
+.prod-name{font-size:12px;font-weight:600;flex:1}
+.prod-val{font-size:11px;color:rgba(255,255,255,.4)}
+/* Admin table */
+.admin-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:12px}
+.admin-table th{text-align:left;padding:7px 10px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.08);font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.admin-table td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.8);white-space:nowrap}
+.admin-table tr:hover td{background:rgba(255,255,255,.02)}
+.copy-btn{background:rgba(99,102,241,.18);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+/* Consultant manager */
+.cons-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cons-row:last-child{border-bottom:none}
+.cons-name{font-size:13px;font-weight:600;flex:1}
+.cons-user{font-size:11px;color:rgba(255,255,255,.35);min-width:70px}
+/* Announcement */
 .ann-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
 .ann-ov.show{display:flex}
 .ann-box{background:linear-gradient(135deg,#1e1b4b,#0d1320);border:2px solid rgba(250,204,21,.35);border-radius:20px;padding:44px 52px;text-align:center;position:relative;max-width:520px;width:90%;animation:popIn .3s ease}
@@ -128,32 +130,42 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .ann-x{position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer}
 .ann-x:hover{color:#fff}
 .ann-emoji{font-size:44px;margin-bottom:14px}
-.ann-title{font-size:26px;font-weight:900;color:#fbbf24;letter-spacing:.03em;line-height:1.25;margin-bottom:10px}
-.ann-body{font-size:15px;color:rgba(255,255,255,.55);line-height:1.5}
+.ann-title2{font-size:26px;font-weight:900;color:#fbbf24;letter-spacing:.03em;line-height:1.25;margin-bottom:10px}
+.ann-body2{font-size:15px;color:rgba(255,255,255,.55);line-height:1.5}
+.ef{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.el{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
+.ei{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:18px;font-weight:700;padding:10px 12px;font-family:'Inter',sans-serif;width:100%;text-align:center}
+.ei:focus{outline:none;border-color:rgba(99,102,241,.5)}
+.ei.ov2{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)}
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.af{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.al{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
+.ai{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;font-weight:600;padding:9px 12px;font-family:'Inter',sans-serif;width:100%}
 </style>
 </head>
 <body>
 <div class="shell">
-
   <div class="titles">
     <div>
       <div class="eyebrow">Telenor Bedrift Fiber Oslo · <span id="month-lbl">Juni 2026</span></div>
       <div class="h1">MÅNEDENS <span class="accent">ARENA</span></div>
     </div>
     <div class="top-right">
-      <div class="live-pill"><span class="ld" id="sync-dot"></span><span id="sync-lbl">Kobler til...</span> <span id="clock" style="margin-left:6px"></span></div>
+      <div class="live-pill"><span class="ld" id="sync-dot"></span><span id="sync-lbl">Kobler til...</span><span id="clock" style="margin-left:6px"></span></div>
       <div class="actions">
+        <button class="btn btn-green" onclick="openM('reg-modal')"><i class="ti ti-plus"></i> Registrer salg</button>
         <button class="btn btn-pink" onclick="openAnnAdmin()"><i class="ti ti-speakerphone"></i> Kunngjøring</button>
-        <button class="btn btn-blue" onclick="openM('add-modal')"><i class="ti ti-plus"></i> Legg til data</button>
+        <button class="btn btn-blue" onclick="openM('add-modal')"><i class="ti ti-table-import"></i> Lim inn data</button>
+        <button class="btn btn-amber" onclick="openAdmin()"><i class="ti ti-lock"></i> Admin</button>
       </div>
     </div>
   </div>
 
   <div class="stat-strip">
-    <div class="stat-box b1"><div class="stat-ico"><i class="ti ti-currency-dollar"></i></div><div><div class="stat-lbl">Total omsetning</div><div class="stat-val" id="stat-omset"></div></div></div>
-    <div class="stat-box b2"><div class="stat-ico"><i class="ti ti-chart-bar"></i></div><div><div class="stat-lbl">Fiber-salg totalt</div><div class="stat-val" id="stat-salg"></div></div></div>
-    <div class="stat-box b3"><div class="stat-ico"><i class="ti ti-users"></i></div><div><div class="stat-lbl">Snitt per selger</div><div class="stat-val" id="stat-snitt"></div></div></div>
-    <div class="stat-box b4"><div class="stat-ico"><i class="ti ti-target"></i></div><div><div class="stat-lbl">På mål (8 salg)</div><div class="stat-val" id="stat-paamaal"></div></div></div>
+    <div class="stat-box b1"><div class="stat-ico"><i class="ti ti-currency-dollar"></i></div><div><div class="stat-lbl">Total omsetning</div><div class="stat-val" id="stat-omset">—</div></div></div>
+    <div class="stat-box b2"><div class="stat-ico"><i class="ti ti-chart-bar"></i></div><div><div class="stat-lbl">Fiber-salg totalt</div><div class="stat-val" id="stat-salg">—</div></div></div>
+    <div class="stat-box b3"><div class="stat-ico"><i class="ti ti-users"></i></div><div><div class="stat-lbl">Snitt per selger</div><div class="stat-val" id="stat-snitt">—</div></div></div>
+    <div class="stat-box b4"><div class="stat-ico"><i class="ti ti-target"></i></div><div><div class="stat-lbl">På mål (8 salg)</div><div class="stat-val" id="stat-paamaal">—</div></div></div>
   </div>
 
   <div class="main-grid">
@@ -164,7 +176,6 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
         <div class="chase-grid" id="chase-list"></div>
       </div>
     </div>
-
     <div class="right-col">
       <div class="card">
         <div class="feed-title"><span class="feed-dot"></span> Live · siste salg</div>
@@ -172,7 +183,6 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- Kunngjøring display -->
@@ -180,8 +190,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
   <div class="ann-box">
     <button class="ann-x" onclick="document.getElementById('ann-ov').classList.remove('show')">✕</button>
     <div class="ann-emoji" id="ann-emoji">📢</div>
-    <div class="ann-title" id="ann-title"></div>
-    <div class="ann-body" id="ann-body"></div>
+    <div class="ann-title2" id="ann-title"></div>
+    <div class="ann-body2" id="ann-body"></div>
   </div>
 </div>
 
@@ -189,7 +199,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 <div class="ov" id="ann-modal">
   <div class="modal">
     <h3><i class="ti ti-speakerphone"></i> Kunngjøring</h3>
-    <p>Dukker opp på alle skjermer med en gang du publiserer.</p>
+    <p>Dukker opp på alle skjermer med en gang.</p>
     <div class="af"><span class="al">Emoji</span><input class="ai" id="ann-e" type="text" placeholder="🎉" maxlength="4" style="width:70px;font-size:22px;text-align:center"></div>
     <div class="af"><span class="al">Tittel</span><input class="ai" id="ann-t" type="text" placeholder="F.eks. KALLE HAR 10 SALG!"></div>
     <div class="af"><span class="al">Beskrivelse (valgfritt)</span><input class="ai" id="ann-b" type="text" placeholder="Gratulerer! 🥳"></div>
@@ -202,12 +212,12 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
   </div>
 </div>
 
-<!-- Legg til data -->
+<!-- Lim inn data -->
 <div class="ov" id="add-modal">
   <div class="modal">
-    <h3><i class="ti ti-table-import"></i> Legg til salgsdata</h3>
+    <h3><i class="ti ti-table-import"></i> Lim inn salgsdata</h3>
     <p>Lim inn tab-separert data fra Excel. Alle TV-er oppdateres automatisk.</p>
-    <textarea id="paste-area" placeholder="Consultant	Date of sale	Week	Value	Product"></textarea>
+    <textarea id="paste-area" class="inp" style="min-height:110px;font-family:monospace;font-size:12px;resize:vertical;margin-bottom:12px" placeholder="Consultant	Date of sale	Week	Value	Product"></textarea>
     <div class="mbtns">
       <button class="mbtn mb-blue" onclick="addData()"><i class="ti ti-upload"></i> Last opp</button>
       <button class="mbtn mb-cancel" onclick="closeModal('add-modal')">Avbryt</button>
@@ -224,16 +234,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     <h3 id="edit-title"><i class="ti ti-pencil"></i> Rediger</h3>
     <p>Skriv inn riktige tall direkte. La feltet stå tomt for å bruke faktiske data.</p>
     <div class="egrid">
-      <div class="ef">
-        <span class="el">FIBER-salg</span>
-        <input class="ei" id="edit-salg" type="number" min="0" placeholder="—">
-        <span class="eh">Faktisk: <span id="edit-salg-a">—</span></span>
-      </div>
-      <div class="ef">
-        <span class="el">Omsetning (kr)</span>
-        <input class="ei" id="edit-omset" type="number" min="0" placeholder="—">
-        <span class="eh">Faktisk: <span id="edit-omset-a">—</span></span>
-      </div>
+      <div class="ef"><span class="el">FIBER-salg</span><input class="ei" id="edit-salg" type="number" min="0" placeholder="—"><span style="font-size:10px;color:rgba(255,255,255,.2);margin-top:2px">Faktisk: <span id="edit-salg-a">—</span></span></div>
+      <div class="ef"><span class="el">Omsetning (kr)</span><input class="ei" id="edit-omset" type="number" min="0" placeholder="—"><span style="font-size:10px;color:rgba(255,255,255,.2);margin-top:2px">Faktisk: <span id="edit-omset-a">—</span></span></div>
     </div>
     <div class="mbtns">
       <button class="mbtn mb-blue" onclick="saveEdit()"><i class="ti ti-check"></i> Lagre</button>
@@ -244,6 +246,81 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
   </div>
 </div>
 
+<!-- Registrer salg -->
+<div class="ov" id="reg-modal">
+  <div class="modal wide">
+    <h3><i class="ti ti-receipt"></i> Registrer salg</h3>
+    <p>Velg navn, skriv inn ordrenummer og velg produkt(er). Hvert produkt registreres som én linje.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="fld">
+        <span class="lbl">Ditt navn</span>
+        <select class="sel" id="reg-name"></select>
+      </div>
+      <div class="fld">
+        <span class="lbl">Ordrenummer</span>
+        <input class="inp" id="reg-order" type="text" placeholder="F.eks. 4489236" maxlength="7">
+        <span class="hint">Kun de 7 sifrene bak 0-tallet i Case-nummer (Case-0<b>4489236</b>)</span>
+      </div>
+    </div>
+    <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
+    <div class="prod-grid" id="prod-grid"></div>
+    <div class="mbtns">
+      <button class="mbtn mb-green" onclick="submitReg()"><i class="ti ti-check"></i> Registrer</button>
+      <button class="mbtn mb-cancel" onclick="closeModal('reg-modal')">Avbryt</button>
+    </div>
+    <div class="smsg" id="reg-msg"></div>
+  </div>
+</div>
+
+<!-- Admin (passord) -->
+<div class="ov" id="admin-pw-modal">
+  <div class="modal" style="width:340px">
+    <h3><i class="ti ti-lock"></i> Admin</h3>
+    <p>Skriv inn adminkode for å fortsette.</p>
+    <div class="fld"><input class="inp" id="admin-pw" type="password" placeholder="Kode" onkeydown="if(event.key==='Enter')checkAdmin()"></div>
+    <div class="mbtns">
+      <button class="mbtn mb-amber" onclick="checkAdmin()">Åpne</button>
+      <button class="mbtn mb-cancel" onclick="closeModal('admin-pw-modal')">Avbryt</button>
+    </div>
+    <div class="smsg" id="pw-msg"></div>
+  </div>
+</div>
+
+<!-- Admin panel -->
+<div class="ov" id="admin-modal">
+  <div class="modal full">
+    <h3><i class="ti ti-settings"></i> Adminpanel</h3>
+    <p>Salgslogg og konsulentadministrasjon.</p>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="mbtn mb-blue" onclick="showAdminTab('log')" id="tab-log">Salgslogg</button>
+      <button class="mbtn mb-cancel" onclick="showAdminTab('cons')" id="tab-cons">Konsulenter</button>
+      <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Excel</button>
+    </div>
+    <div id="admin-log-section">
+      <div style="overflow-x:auto;max-height:60vh;overflow-y:auto">
+        <table class="admin-table" id="admin-table">
+          <thead><tr>
+            <th>Konsulent</th><th>ep-bruker</th><th>Dato solgt</th><th>Måned</th><th>Uke</th><th>Team</th><th>Ordrenr.</th><th>Nettbutikk</th><th>Antall</th><th>Produkt</th><th>CPO</th>
+          </tr></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="admin-cons-section" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="fld"><span class="lbl">Fullt navn</span><input class="inp" id="new-cons-name" type="text" placeholder="F.eks. Kalle Rode"></div>
+        <div class="fld"><span class="lbl">ep-bruker</span><input class="inp" id="new-cons-user" type="text" placeholder="F.eks. t984474"></div>
+      </div>
+      <button class="mbtn mb-green" onclick="addConsultant()" style="margin-bottom:16px"><i class="ti ti-plus"></i> Legg til</button>
+      <div id="cons-list"></div>
+    </div>
+    <div class="mbtns" style="margin-top:14px">
+      <button class="mbtn mb-cancel" onclick="closeModal('admin-modal')">Lukk</button>
+    </div>
+    <div class="smsg" id="admin-msg"></div>
+  </div>
+</div>
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const sb = createClient(
@@ -251,48 +328,89 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
 );
 
-const ACTIVE=['kalle','alijan','marcus','andreas','simen','melvin','sander','omar','aleksandra','rognstad','nizar','shifa','jonas','chris','bjørn','charlie','arion','arman','oskar'];
-const DN={'kalle':'Kalle','alijan':'Alijan','marcus':'Marcus','andreas':'Andreas','simen':'Simen','melvin':'Melvin','sander':'Sander','omar':'Omar','aleksandra':'Aleksandra','rognstad':'Rognstad','nizar':'Nizar','shifa':'Shifa','jonas':'Jonas','chris':'Chris','bjørn':'Bjørn','charlie':'Charlie','arion':'Arion','arman':'Arman','oskar':'Oskar'};
-// Aliaser: navnevarianter i rådata som skal kobles til samme aktive selger
+const PRODUCTS=[
+  {name:'FIBER 20',cpo:5000},{name:'FIBER 60',cpo:7000},{name:'FIBER 100',cpo:9000},
+  {name:'FIBER 200',cpo:12000},{name:'FIBER 400',cpo:12000},{name:'FIBER 600',cpo:12000},
+  {name:'FIBER 1GB',cpo:12000},{name:'TBB 20',cpo:3000},{name:'TBB 40',cpo:3000},
+  {name:'TBB 60',cpo:3000},{name:'TBB 100',cpo:3000},{name:'TBB 200',cpo:4500},
+  {name:'TBB 400',cpo:4500},{name:'WIFI CONNECT AKS',cpo:250},{name:'SLA MBU',cpo:700},
+  {name:'SLA FIBER',cpo:700},{name:'SAFEZONE INTERNETT',cpo:250},{name:'LEAD WIFI CONNECT',cpo:700},
+  {name:'LEAD WIFI AKS',cpo:250},{name:'WIFI CONNECT INNE',cpo:750},{name:'5G Reserve',cpo:400}
+];
+
 const ALIAS={'alexander':'rognstad','aleksander':'rognstad','aleksander rognstad':'rognstad'};
-const normName=n=>{const low=n.toLowerCase().trim();return ALIAS[low]||low;};
 const AC=[['#6366f1','#1e1b4b'],['#10b981','#052e16'],['#f59e0b','#2d1d00'],['#8b5cf6','#2e1065'],['#ec4899','#500724'],['#14b8a6','#042f2e'],['#3b82f6','#1e3a5f'],['#ef4444','#450a0a'],['#a855f7','#3b0764'],['#22c55e','#052e16'],['#06b6d4','#082f49'],['#f97316','#431407'],['#84cc16','#1a2e05'],['#e879f9','#4a044e']];
 const SMAL=8,OMAL=80000;
+const MONTHS=['','Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
 
-let allRows=[],corrections=[],activeAnn=null,currentSeller=null,currentMK=null;
+let allRows=[],corrections=[],activeAnn=null,consultants=[],registrations=[];
+let currentSeller=null,currentMK=null;
 
 const gac=n=>{let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%AC.length;return AC[h];};
-const gdn=n=>DN[normName(n)]||n;
 const ini=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 const kr=n=>new Intl.NumberFormat('nb-NO',{maximumFractionDigits:0}).format(n)+' kr';
 const isF=p=>p.toUpperCase().includes('FIBER');
-const isA=n=>ACTIVE.includes(normName(n));
 const pd=ds=>{const p=ds.split('.');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):new Date(0);};
 const gmk=ds=>{const p=ds.split('.');return p.length===3?p[1]+'.'+p[2]:'';};
 const gml=k=>{const m=['','Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];const[mm,yy]=k.split('.');return(m[+mm]||mm)+' '+yy;};
 const setSync=ok=>{document.getElementById('sync-dot').className='ld'+(ok?'':' err');document.getElementById('sync-lbl').textContent=ok?'Live':'Frakoblet';};
 
-window.openM=id=>document.getElementById(id).classList.add('open');
-window.closeModal=id=>document.getElementById(id).classList.remove('open');
-['ann-modal','add-modal','edit-modal'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))window.closeModal(id);});
-});
-
-const parseTSV=txt=>{
-  const lines=txt.trim().split('\n').filter(l=>l.trim());
-  const rows=[];
-  let s=lines[0]&&lines[0].toLowerCase().includes('consultant')?1:0;
-  for(let i=s;i<lines.length;i++){
-    const c=lines[i].split('\t');if(c.length<5)continue;
-    const consultant=c[0].trim(),date_of_sale=c[1].trim(),week=c[2].trim();
-    const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
-    const product=c[4].trim();
-    if(!consultant)continue;
-    rows.push({consultant,date_of_sale,week,value,product});
-  }
-  return rows;
+// Normalize name through alias + match to consultant list
+const normNameToKey=n=>{
+  const low=n.toLowerCase().trim();
+  const aliased=ALIAS[low]||low;
+  // Try to match against active consultant display names
+  const match=consultants.find(c=>c.name.toLowerCase()===aliased||ini(c.name).toLowerCase()===aliased||c.name.toLowerCase().includes(aliased)||aliased.includes(c.name.toLowerCase().split(' ').pop()));
+  return match?match.name:n;
+};
+const normName=n=>{
+  const low=n.toLowerCase().trim();
+  return ALIAS[low]||low;
+};
+const isActive=n=>{
+  const low=normName(n);
+  return consultants.some(c=>c.active&&(c.name.toLowerCase()===low||c.name.toLowerCase().split(' ').pop()===low||normName(c.name)===low));
+};
+const getDisplayName=n=>{
+  const low=normName(n);
+  const match=consultants.find(c=>c.name.toLowerCase()===low||c.name.toLowerCase().split(' ').pop()===low||normName(c.name)===low);
+  return match?match.name.split(' ')[0]:n;
+};
+const getKey=n=>{
+  const low=normName(n);
+  const match=consultants.find(c=>c.name.toLowerCase()===low||c.name.toLowerCase().split(' ').pop()===low||normName(c.name)===low);
+  return match?match.name.toLowerCase():low;
 };
 
+window.openM=id=>document.getElementById(id).classList.add('open');
+window.closeModal=id=>document.getElementById(id).classList.remove('open');
+['ann-modal','add-modal','edit-modal','reg-modal','admin-pw-modal','admin-modal'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)el.addEventListener('click',e=>{if(e.target===el)window.closeModal(id);});
+});
+
+// ISO week number
+function getISOWeek(date){
+  const d=new Date(date);d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+3-(d.getDay()+6)%7);
+  const week1=new Date(d.getFullYear(),0,4);
+  return 1+Math.round(((d-week1)/86400000-3+(week1.getDay()+6)%7)/7);
+}
+
+// Format date as dd.mm.yyyy
+function todayStr(){
+  const d=new Date();
+  const dd=String(d.getDate()).padStart(2,'0');
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  return`${dd}.${mm}.${d.getFullYear()}`;
+}
+
+async function loadConsultants(){
+  const {data}=await sb.from('consultants').select('*').order('name');
+  consultants=data||[];
+  populateRegSelect();
+  renderConsList();
+}
 async function loadData(){
   const {data,error}=await sb.from('sales').select('*');
   if(error){setSync(false);return;}
@@ -304,6 +422,11 @@ async function loadData(){
 async function loadCorrections(){
   const {data}=await sb.from('corrections').select('*');
   corrections=data||[];render();
+}
+async function loadRegistrations(){
+  const {data}=await sb.from('registrations').select('*').order('date_sold',{ascending:false});
+  registrations=data||[];
+  renderAdminTable();
 }
 async function loadAnn(){
   const {data}=await sb.from('announcements').select('*').order('created_at',{ascending:false}).limit(1);
@@ -322,7 +445,91 @@ async function loadAnn(){
 sb.channel('s1').on('postgres_changes',{event:'*',schema:'public',table:'sales'},loadData).subscribe(s=>setSync(s==='SUBSCRIBED'));
 sb.channel('s2').on('postgres_changes',{event:'*',schema:'public',table:'corrections'},loadCorrections).subscribe();
 sb.channel('s3').on('postgres_changes',{event:'*',schema:'public',table:'announcements'},loadAnn).subscribe();
+sb.channel('s4').on('postgres_changes',{event:'*',schema:'public',table:'registrations'},loadRegistrations).subscribe();
+sb.channel('s5').on('postgres_changes',{event:'*',schema:'public',table:'consultants'},loadConsultants).subscribe();
 
+// Populate product grid
+document.getElementById('prod-grid').innerHTML=PRODUCTS.map((p,i)=>`
+  <label class="prod-item" id="plbl-${i}">
+    <input type="checkbox" id="prod-${i}" onchange="toggleProd(${i})">
+    <span class="prod-name">${p.name}</span>
+    <span class="prod-val">${new Intl.NumberFormat('nb-NO').format(p.cpo)} kr</span>
+  </label>`).join('');
+
+window.toggleProd=i=>{
+  document.getElementById(`plbl-${i}`).classList.toggle('sel-p',document.getElementById(`prod-${i}`).checked);
+};
+
+function populateRegSelect(){
+  const sel=document.getElementById('reg-name');
+  const current=sel.value;
+  sel.innerHTML='<option value="">Velg navn...</option>'+
+    consultants.filter(c=>c.active).sort((a,b)=>a.name.localeCompare(b.name))
+    .map(c=>`<option value="${c.name}">${c.name.split(' ')[0]} ${c.name.split(' ').pop()}</option>`).join('');
+  if(current)sel.value=current;
+}
+
+window.submitReg=async()=>{
+  const name=document.getElementById('reg-name').value;
+  const order=document.getElementById('reg-order').value.trim();
+  const msg=document.getElementById('reg-msg');
+  if(!name){msg.textContent='Velg navn.';return;}
+  if(!order||order.length!==7||isNaN(order)){msg.textContent='Ordrenummer må være 7 siffer.';return;}
+  const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
+  if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
+
+  const cons=consultants.find(c=>c.name===name);
+  if(!cons){msg.textContent='Fant ikke konsulenten.';return;}
+
+  const today=todayStr();
+  const dateParts=today.split('.');
+  const dateObj=new Date(+dateParts[2],+dateParts[1]-1,+dateParts[0]);
+  const monthName=MONTHS[+dateParts[1]];
+  const weekNum=getISOWeek(dateObj);
+
+  msg.textContent='Registrerer...';
+
+  // Insert into registrations table
+  const regRows=selected.map(p=>({
+    consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
+    month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
+    order_number:order,nettbutikk:'0',quantity:1,product:p.name,cpo:p.cpo
+  }));
+  const {error:regErr}=await sb.from('registrations').insert(regRows);
+  if(regErr){msg.textContent='Feil: '+regErr.message;return;}
+
+  // Also insert into sales table for dashboard
+  const salesRows=selected.map(p=>({
+    consultant:cons.name.split(' ')[0],date_of_sale:today,week:String(weekNum),value:p.cpo,product:p.name
+  }));
+  const {error:salesErr}=await sb.from('sales').insert(salesRows);
+  if(salesErr){msg.textContent='Feil ved oppdatering av dashboard: '+salesErr.message;return;}
+
+  // Reset form
+  PRODUCTS.forEach((_,i)=>{
+    document.getElementById(`prod-${i}`).checked=false;
+    document.getElementById(`plbl-${i}`).classList.remove('sel-p');
+  });
+  document.getElementById('reg-order').value='';
+  msg.style.color='#34d399';
+  msg.textContent=`✓ ${selected.length} produkt(er) registrert!`;
+  setTimeout(()=>{msg.textContent='';msg.style.color='';window.closeModal('reg-modal');},2000);
+};
+
+// Add data (paste)
+const parseTSV=txt=>{
+  const lines=txt.trim().split('\n').filter(l=>l.trim());
+  const rows=[];let s=lines[0]&&lines[0].toLowerCase().includes('consultant')?1:0;
+  for(let i=s;i<lines.length;i++){
+    const c=lines[i].split('\t');if(c.length<5)continue;
+    const consultant=c[0].trim(),date_of_sale=c[1].trim(),week=c[2].trim();
+    const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+    const product=c[4].trim();
+    if(!consultant)continue;
+    rows.push({consultant,date_of_sale,week,value,product});
+  }
+  return rows;
+};
 window.addData=async()=>{
   const txt=document.getElementById('paste-area').value;
   const rows=parseTSV(txt);
@@ -337,13 +544,11 @@ window.addData=async()=>{
 };
 window.resetData=async()=>{
   if(!confirm('Slette ALLE salgsdata?'))return;
-  const msg=document.getElementById('add-msg');
-  msg.textContent='Sletter...';
   await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  msg.textContent='✓ Slettet.';
-  setTimeout(()=>{msg.textContent='';},2000);
+  document.getElementById('add-msg').textContent='✓ Slettet.';
 };
 
+// Announcement
 window.openAnnAdmin=()=>{
   document.getElementById('ann-e').value=activeAnn?activeAnn.emoji||'':'';
   document.getElementById('ann-t').value=activeAnn?activeAnn.title||'':'';
@@ -366,18 +571,19 @@ window.publishAnn=async()=>{
   setTimeout(()=>{window.closeModal('ann-modal');},1500);
 };
 window.deleteAnn=async()=>{
-  if(!confirm('Fjerne kunngjøringen?'))return;
+  if(!confirm('Fjerne?'))return;
   await sb.from('announcements').delete().neq('id','00000000-0000-0000-0000-000000000000');
   window.closeModal('ann-modal');
 };
 
+// Edit seller
 window.openEditModal=sk=>{
   currentSeller=sk;
-  const mRows=allRows.filter(r=>isA(r.name)&&gmk(r.dateStr)===currentMK&&normName(r.name)===sk);
+  const mRows=allRows.filter(r=>getKey(r.name)===sk&&gmk(r.dateStr)===currentMK);
   const actualSalg=mRows.filter(r=>isF(r.product)).length;
   const actualOmset=mRows.reduce((a,r)=>a+r.value,0);
   const existing=corrections.find(c=>c.consultant===sk&&c.month_key===currentMK);
-  document.getElementById('edit-title').innerHTML=`<i class="ti ti-pencil"></i> Rediger ${gdn(sk)}`;
+  document.getElementById('edit-title').innerHTML=`<i class="ti ti-pencil"></i> Rediger ${sk}`;
   document.getElementById('edit-salg-a').textContent=actualSalg+' salg';
   document.getElementById('edit-omset-a').textContent=kr(actualOmset);
   const si=document.getElementById('edit-salg');
@@ -414,42 +620,126 @@ window.clearEdit=async()=>{
   window.closeModal('edit-modal');
 };
 
+// Admin
+window.openAdmin=()=>{
+  document.getElementById('admin-pw').value='';
+  document.getElementById('pw-msg').textContent='';
+  window.openM('admin-pw-modal');
+};
+window.checkAdmin=()=>{
+  if(document.getElementById('admin-pw').value==='2024'){
+    window.closeModal('admin-pw-modal');
+    loadRegistrations();
+    renderConsList();
+    showAdminTab('log');
+    window.openM('admin-modal');
+  } else {
+    document.getElementById('pw-msg').textContent='Feil kode.';
+  }
+};
+window.showAdminTab=(tab)=>{
+  document.getElementById('admin-log-section').style.display=tab==='log'?'block':'none';
+  document.getElementById('admin-cons-section').style.display=tab==='cons'?'block':'none';
+  document.getElementById('copy-log-btn').style.display=tab==='log'?'inline-flex':'none';
+  document.getElementById('tab-log').className='mbtn '+(tab==='log'?'mb-blue':'mb-cancel');
+  document.getElementById('tab-cons').className='mbtn '+(tab==='cons'?'mb-blue':'mb-cancel');
+};
+
+function renderAdminTable(){
+  const tbody=document.getElementById('admin-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=registrations.map(r=>`<tr>
+    <td>${r.consultant}</td><td>${r.ep_user}</td><td>${r.date_sold}</td>
+    <td>${r.month_name}</td><td>${r.week_number}</td><td>${r.team}</td>
+    <td>${r.order_number}</td><td>${r.nettbutikk||'0'}</td><td>${r.quantity||1}</td>
+    <td>${r.product}</td><td>${r.cpo}</td>
+  </tr>`).join('');
+}
+
+window.copyLog=()=>{
+  const header='Konsulent\tep-bruker\tDato solgt\tMåned\tUke\tTeam\tOrdrenr.\tNettbutikk\tAntall\tProdukt\tCPO';
+  const rows=registrations.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo].join('\t'));
+  navigator.clipboard.writeText([header,...rows].join('\n'));
+  document.getElementById('admin-msg').textContent='✓ Kopiert til utklippstavlen!';
+  setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
+};
+
+// Consultant management
+function renderConsList(){
+  const el=document.getElementById('cons-list');
+  if(!el)return;
+  el.innerHTML=consultants.map(c=>`
+    <div class="cons-row">
+      <span class="cons-name">${c.name}</span>
+      <span class="cons-user">${c.ep_user}</span>
+      <span class="chip" style="font-size:10px;${c.active?'color:#34d399':'color:#f87171'}">${c.active?'Aktiv':'Inaktiv'}</span>
+      <button class="mbtn ${c.active?'mb-amber':'mb-green'}" style="padding:4px 10px;font-size:10px" onclick="toggleConsultant('${c.id}',${c.active})">${c.active?'Deaktiver':'Aktiver'}</button>
+      <button class="mbtn mb-red" style="padding:4px 10px;font-size:10px" onclick="removeConsultant('${c.id}')">Fjern</button>
+    </div>`).join('');
+}
+window.addConsultant=async()=>{
+  const name=document.getElementById('new-cons-name').value.trim();
+  const ep_user=document.getElementById('new-cons-user').value.trim();
+  const msg=document.getElementById('admin-msg');
+  if(!name||!ep_user){msg.textContent='Fyll inn navn og ep-bruker.';return;}
+  const {error}=await sb.from('consultants').insert({name,ep_user,active:true});
+  if(error){msg.textContent='Feil: '+error.message;return;}
+  document.getElementById('new-cons-name').value='';
+  document.getElementById('new-cons-user').value='';
+  msg.textContent='✓ Lagt til!';
+  setTimeout(()=>{msg.textContent='';},2000);
+};
+window.toggleConsultant=async(id,active)=>{
+  await sb.from('consultants').update({active:!active}).eq('id',id);
+};
+window.removeConsultant=async(id)=>{
+  if(!confirm('Fjerne konsulenten? Salgene deres beholdes i loggen.'))return;
+  await sb.from('consultants').delete().eq('id',id);
+};
+
 function render(){
+  if(!consultants.length)return;
   const months=[...new Set(allRows.map(r=>gmk(r.dateStr)).filter(Boolean))].sort();
   const lm=months[months.length-1]||'06.2026';
   currentMK=lm;
-  const ml=gml(lm);
-  document.getElementById('month-lbl').textContent=ml;
+  document.getElementById('month-lbl').textContent=gml(lm);
 
-  const aRows=allRows.filter(r=>isA(r.name));
-  const mRows=aRows.filter(r=>gmk(r.dateStr)===lm);
+  const mRows=allRows.filter(r=>gmk(r.dateStr)===lm);
 
-  const sd=ACTIVE.map(sk=>{
-    const rows=mRows.filter(r=>normName(r.name)===sk);
+  const sd=consultants.filter(c=>c.active).map(c=>{
+    const key=c.name.toLowerCase();
+    const firstName=c.name.split(' ')[0];
+    const lastName=c.name.split(' ').pop();
+    const rows=mRows.filter(r=>{
+      const rn=r.name.toLowerCase().trim();
+      const aliased=ALIAS[rn]||rn;
+      return aliased===key||aliased===lastName.toLowerCase()||rn===firstName.toLowerCase()||rn===key;
+    });
     const aS=rows.filter(r=>isF(r.product)).length;
     const aO=rows.reduce((a,r)=>a+r.value,0);
-    const c=corrections.find(c=>c.consultant===sk&&c.month_key===lm);
-    return{key:sk,name:gdn(sk),salg:c&&c.salg_override!==null?c.salg_override:aS,omset:c&&c.omset_override!==null?c.omset_override:aO,hasCorr:!!c};
+    const corr=corrections.find(x=>x.consultant===key&&x.month_key===lm);
+    return{key,name:firstName,fullName:c.name,salg:corr&&corr.salg_override!==null?corr.salg_override:aS,omset:corr&&corr.omset_override!==null?corr.omset_override:aO,hasCorr:!!corr};
   });
+
   const wd=sd.filter(s=>s.salg>0||s.omset>0).sort((a,b)=>b.omset-a.omset||b.salg-a.salg);
-  const sorted=[...wd,...sd.filter(s=>s.salg===0&&s.omset===0)];
+  const nd=sd.filter(s=>s.salg===0&&s.omset===0);
+  const sorted=[...wd,...nd];
 
   const tO=sorted.reduce((a,s)=>a+s.omset,0);
   const tS=sorted.reduce((a,s)=>a+s.salg,0);
   const snitt=sorted.length?Math.round(tO/sorted.length):0;
-
   const foran=sorted.filter(s=>s.salg>=SMAL||s.omset>=OMAL).length;
+
   document.getElementById('stat-omset').textContent=kr(tO);
   document.getElementById('stat-salg').textContent=tS;
   document.getElementById('stat-snitt').textContent=kr(snitt);
   document.getElementById('stat-paamaal').innerHTML=foran+'<span style="font-size:14px;color:rgba(255,255,255,.3)"> / '+sorted.length+'</span>';
 
-  // PODIUM (top 3)
   const top3=wd.slice(0,3);
-  const order=[1,0,2]; // visual order: 2nd, 1st, 3rd
-  const podiumHtml=order.map(idx=>{
+  const order=[1,0,2];
+  document.getElementById('podium').innerHTML=order.map(idx=>{
     const s=top3[idx];
-    if(!s) return '<div class="pod-col"></div>';
+    if(!s)return'<div class="pod-col"></div>';
     const place=idx+1;
     const [bg,fg]=gac(s.name);
     const crown=place===1?'<div class="crown">👑</div>':'';
@@ -460,18 +750,15 @@ function render(){
       <div class="pod-bar"><div class="pod-rank">${place}</div><div class="pod-val">${kr(s.omset)}</div></div>
     </div>`;
   }).join('');
-  document.getElementById('podium').innerHTML=podiumHtml;
 
-  // CHASE LIST (rank 4+, all sellers, 2-column grid)
   const chasers=sorted.slice(3);
-  const maxOmset=chasers.length?chasers[0].omset:1;
+  const maxO=chasers.length?chasers[0].omset:1;
   document.getElementById('chase-list').innerHTML=chasers.map((s,i)=>{
-    const rank=i+4;
-    const pct=maxOmset>0?Math.min(Math.round(s.omset/maxOmset*100),100):0;
+    const pct=maxO>0?Math.min(Math.round(s.omset/maxO*100),100):0;
     const [bg,fg]=gac(s.name);
     const clr=s.salg>=SMAL||s.omset>=OMAL?'#34d399':pct>=50?'#fbbf24':'#818cf8';
     return`<div class="chase-row" onclick="openEditModal('${s.key}')">
-      <span class="chase-rank">${rank}</span>
+      <span class="chase-rank">${i+4}</span>
       <div class="chase-av" style="background:${fg};color:${bg}">${ini(s.name)}</div>
       <span class="chase-name">${s.name}</span>
       <div class="chase-bar-bg"><div class="chase-bar-fill" style="width:${pct}%;background:${clr}"></div></div>
@@ -479,11 +766,10 @@ function render(){
     </div>`;
   }).join('');
 
-  // LIVE FEED
-  const recent=[...aRows].sort((a,b)=>pd(b.dateStr)-pd(a.dateStr)).slice(0,14);
+  const recent=[...allRows].sort((a,b)=>pd(b.dateStr)-pd(a.dateStr)).slice(0,14);
   document.getElementById('feed-list').innerHTML=recent.map(r=>{
-    const [bg,fg]=gac(gdn(r.name));
-    return`<div class="feed-item"><div class="feed-av" style="background:${fg};color:${bg}">${ini(gdn(r.name))}</div><div class="feed-info"><div class="feed-name">${gdn(r.name)}</div><div class="feed-prod">${r.product}</div></div><div class="feed-val">+${kr(r.value)}</div></div>`;
+    const [bg,fg]=gac(r.name);
+    return`<div class="feed-item"><div class="feed-av" style="background:${fg};color:${bg}">${ini(r.name)}</div><div class="feed-info"><div class="feed-name">${r.name}</div><div class="feed-prod">${r.product}</div></div><div class="feed-val">+${kr(r.value)}</div></div>`;
   }).join('');
 }
 
@@ -492,9 +778,13 @@ function tick(){
   document.getElementById('clock').textContent=now.toLocaleDateString('nb-NO',{weekday:'short',day:'numeric',month:'short'})+' — '+now.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});
 }
 
-loadData();loadCorrections();loadAnn();tick();
-setInterval(tick,30000);
-setInterval(()=>{loadData();loadCorrections();loadAnn();},10000);
+async function init(){
+  await loadConsultants();
+  await Promise.all([loadData(),loadCorrections(),loadAnn(),loadRegistrations()]);
+  tick();setInterval(tick,30000);
+  setInterval(()=>{loadData();loadCorrections();loadAnn();},10000);
+}
+init();
 </script>
 </body>
 </html>
