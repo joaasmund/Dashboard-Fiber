@@ -741,6 +741,7 @@ window.deleteReg=async(id)=>{
   document.getElementById('admin-msg').textContent='✓ Linje slettet.';
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
+window.updateConsTeam=async(id,team_name)=>{
   await sb.from('consultants').update({team_name}).eq('id',id);
 };
 window.addConsultant=async()=>{
