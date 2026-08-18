@@ -267,6 +267,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     <div id="addon-order-section" style="display:none;margin-bottom:14px"></div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
     <div class="prod-grid" id="prod-grid"></div>
+    <div id="lead-price-section" style="display:none"></div>
 
     <!-- Splitt salg -->
     <div style="margin-bottom:14px">
@@ -511,19 +512,70 @@ sb.channel('s3').on('postgres_changes',{event:'*',schema:'public',table:'announc
 sb.channel('s4').on('postgres_changes',{event:'*',schema:'public',table:'registrations'},loadRegistrations).subscribe();
 sb.channel('s5').on('postgres_changes',{event:'*',schema:'public',table:'consultants'},loadConsultants).subscribe();
 
+const LEAD_PRODUCTS=['WIFI CONNECT AKS','LEAD WIFI CONNECT'];
+const isLead=p=>LEAD_PRODUCTS.includes(p.name);
+
 // Populate product grid
 document.getElementById('prod-grid').innerHTML=PRODUCTS.map((p,i)=>`
-  <label class="prod-item" id="plbl-${i}">
+  <label class="prod-item${isLead(p)?' lead-prod':''}" id="plbl-${i}" title="${isLead(p)?'Lead-produkt — registreres separat når utfallet er kjent':''}">
     <input type="checkbox" id="prod-${i}" onchange="toggleProd(${i})">
-    <span class="prod-name">${p.name}</span>
-    <span class="prod-val">${new Intl.NumberFormat('nb-NO').format(p.cpo)} kr</span>
+    <span class="prod-name">${p.name}${isLead(p)?` <span style="font-size:9px;color:#fbbf24;font-weight:700">LEAD</span>`:''}</span>
+    <span class="prod-val" id="prod-val-${i}">${isLead(p)?'variabel':new Intl.NumberFormat('nb-NO').format(p.cpo)+' kr'}</span>
   </label>`).join('');
 
 window.toggleProd=i=>{
-  document.getElementById(`plbl-${i}`).classList.toggle('sel-p',document.getElementById(`prod-${i}`).checked);
+  const checked=document.getElementById(`prod-${i}`).checked;
+  const p=PRODUCTS[i];
+  document.getElementById(`plbl-${i}`).classList.toggle('sel-p',checked);
+
+  // Sjekk konflikt: lead vs ikke-lead
+  const selected=PRODUCTS.filter((_,j)=>document.getElementById(`prod-${j}`).checked);
+  const hasLead=selected.some(x=>isLead(x));
+  const hasNonLead=selected.some(x=>!isLead(x));
+  if(hasLead&&hasNonLead){
+    // Fjern det sist hukede
+    document.getElementById(`prod-${i}`).checked=false;
+    document.getElementById(`plbl-${i}`).classList.remove('sel-p');
+    const msg=document.getElementById('reg-msg');
+    msg.style.color='#fbbf24';
+    msg.textContent='WIFI CONNECT AKS og LEAD WIFI CONNECT må registreres separat — de kan ikke kombineres med andre produkter. Registrer leadet når du vet utfallet.';
+    setTimeout(()=>{msg.textContent='';msg.style.color='';},4000);
+    return;
+  }
+
+  // Vis/skjul lead-pris-felt
+  updateLeadPriceFields();
   if(document.getElementById('split-toggle').checked) updateSplitPreview();
   updateOrderInputs();
 };
+
+function updateLeadPriceFields(){
+  const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
+  const leads=selected.filter(p=>isLead(p));
+  const section=document.getElementById('lead-price-section');
+  if(!section)return;
+  if(leads.length>0){
+    section.style.display='block';
+    section.innerHTML=`<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:9px;padding:12px 14px;margin-bottom:14px">
+      <div class="lbl" style="color:#fbbf24;margin-bottom:6px"><i class="ti ti-info-circle"></i> Lead-registrering</div>
+      <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px">Registreres kun når utfallet er kjent fra leadsgruppen.</p>
+      ${leads.map((p,i)=>p.name==='WIFI CONNECT AKS'?`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:11px;color:rgba(255,255,255,.4);min-width:140px">${p.name} (250 kr/stk)</span>
+          <select class="sel" id="lead-qty-${i}" style="flex:1">
+            ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}">${n} aksess${n>1?'er':''} = ${new Intl.NumberFormat('nb-NO').format(n*250)} kr</option>`).join('')}
+          </select>
+        </div>`:`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:11px;color:rgba(255,255,255,.4)">${p.name}</span>
+          <span style="font-size:11px;color:#34d399;margin-left:auto">700 kr</span>
+        </div>`).join('')}
+    </div>`;
+  } else {
+    section.style.display='none';
+    section.innerHTML='';
+  }
+}
 
 function updateOrderInputs(){
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
@@ -609,6 +661,19 @@ window.submitReg=async()=>{
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
+  // For lead-produkter: beregn riktig beløp
+  const leadSelected=selected.filter(p=>isLead(p));
+  leadSelected.forEach((p,i)=>{
+    if(p.name==='WIFI CONNECT AKS'){
+      const qty=parseInt(document.getElementById(`lead-qty-${i}`)?.value||'1');
+      p._cpo=250*qty;
+      p._qty=qty;
+    } else {
+      p._cpo=700;
+      p._qty=1;
+    }
+  });
+
   const primaries=selected.filter(p=>isPrimaryProduct(p));
   const addons=selected.filter(p=>isAddon(p));
 
@@ -681,19 +746,20 @@ window.submitReg=async()=>{
 
   selected.forEach(p=>{
     const pOrder=productOrderMap.get(p)||orders[0];
-    const myVal=isSplit?Math.round(p.cpo*myPct/100):p.cpo;
-    const otherVal=isSplit?(p.cpo-myVal):0;
+    const effectiveCpo=p._cpo||p.cpo;
+    const myVal=isSplit?Math.round(effectiveCpo*myPct/100):effectiveCpo;
+    const otherVal=isSplit?(effectiveCpo-myVal):0;
 
     regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
       month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-      order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:myVal});
+      order_number:pOrder,nettbutikk:'0',quantity:p._qty||1,product:p.name,cpo:myVal});
     salesRows.push({consultant:cons.name.split(' ')[0],date_of_sale:today,
       week:String(weekNum),value:myVal,product:p.name});
 
     if(isSplit&&splitCons){
       regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
         month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-        order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:otherVal});
+        order_number:pOrder,nettbutikk:'0',quantity:p._qty||1,product:p.name,cpo:otherVal});
       salesRows.push({consultant:splitCons.name.split(' ')[0],date_of_sale:today,
         week:String(weekNum),value:otherVal,product:p.name});
     }
@@ -712,6 +778,8 @@ window.submitReg=async()=>{
   container.innerHTML='<input class="inp" id="reg-order-0" type="text" placeholder="Ordrenummer" style="margin-bottom:6px">';
   const addonSec=document.getElementById('addon-order-section');
   if(addonSec){addonSec.style.display='none';addonSec.innerHTML='';}
+  const leadSec=document.getElementById('lead-price-section');
+  if(leadSec){leadSec.style.display='none';leadSec.innerHTML='';}
   document.getElementById('split-toggle').checked=false;
   document.getElementById('split-section').style.display='none';
   document.getElementById('split-name').value='';
