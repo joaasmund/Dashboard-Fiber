@@ -217,7 +217,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
   <div class="modal">
     <h3><i class="ti ti-table-import"></i> Lim inn salgsdata</h3>
     <p>Lim inn tab-separert data fra Excel. Alle TV-er oppdateres automatisk.</p>
-    <textarea id="paste-area" class="inp" style="min-height:110px;font-family:monospace;font-size:12px;resize:vertical;margin-bottom:12px" placeholder="Consultant	Date of sale	Week	Value	Product"></textarea>
+    <textarea id="paste-area" class="inp" style="min-height:110px;font-family:monospace;font-size:12px;resize:vertical;margin-bottom:12px" placeholder="Consultant	Date of sale	Week	Value	Product	Ordrenummer&#10;Andreas	18.08.2026	34	7000	Fiber 60	3978191&#10;(Ordrenummer er valgfritt — utelat kolonnen hvis du ikke har den)"></textarea>
     <div class="mbtns">
       <button class="mbtn mb-blue" onclick="addData()"><i class="ti ti-upload"></i> Last opp</button>
       <button class="mbtn mb-cancel" onclick="closeModal('add-modal')">Avbryt</button>
@@ -259,7 +259,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <div class="fld">
         <span class="lbl">Ordrenummer</span>
         <input class="inp" id="reg-order" type="text" placeholder="F.eks. 4489236 eller Case-04489236">
-        <span class="hint">Skriv hele Case-nummeret eller bare de siste 7 sifrene — vi henter ut riktig del automatisk</span>
+        <span class="hint">Fiber/TBB: 7 siffer som starter på 4 (f.eks. 4489236) · NS/PORT: B + 7 siffer (f.eks. B1039487)</span>
       </div>
     </div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
@@ -351,7 +351,13 @@ const PRODUCTS=[
   {name:'TBB 60',cpo:3000},{name:'TBB 100',cpo:3000},{name:'TBB 200',cpo:4500},
   {name:'TBB 400',cpo:4500},{name:'WIFI CONNECT AKS',cpo:250},{name:'SLA MBU',cpo:700},
   {name:'SLA FIBER',cpo:700},{name:'SAFEZONE INTERNETT',cpo:250},{name:'LEAD WIFI CONNECT',cpo:700},
-  {name:'LEAD WIFI AKS',cpo:250},{name:'WIFI CONNECT INNE',cpo:750},{name:'5G Reserve',cpo:400}
+  {name:'LEAD WIFI AKS',cpo:250},{name:'WIFI CONNECT INNE',cpo:750},{name:'5G Reserve',cpo:400},
+  {name:'NS BASIS',cpo:650},{name:'NS BASIS TALE',cpo:900},{name:'NS BASIS DATA',cpo:900},
+  {name:'NS FLYT 5',cpo:1700},{name:'NS FLYT 20',cpo:2500},{name:'NS FLYT 50',cpo:2500},
+  {name:'NS FRIHET',cpo:2750},{name:'NS PREMIUM',cpo:3000},{name:'NS BED TOTAL',cpo:900},
+  {name:'PORT BASIS',cpo:650},{name:'PORT BASIS TALE',cpo:900},{name:'PORT BASIS DATA',cpo:900},
+  {name:'PORT FLYT 5',cpo:1700},{name:'PORT FLYT 20',cpo:2500},{name:'PORT FLYT 50',cpo:2500},
+  {name:'PORT FRIHET',cpo:2750},{name:'PORT PREMIUM',cpo:3000},{name:'PORT BED TOTAL',cpo:900}
 ];
 
 const ALIAS={'alexander':'rognstad','aleksander':'rognstad','aleksander rognstad':'rognstad'};
@@ -487,13 +493,23 @@ function populateRegSelect(){
 
 window.submitReg=async()=>{
   const name=document.getElementById('reg-name').value;
-  const orderRaw=document.getElementById('reg-order').value.trim();
+  const orderRaw=document.getElementById('reg-order').value.trim().toUpperCase();
   const msg=document.getElementById('reg-msg');
   if(!name){msg.textContent='Velg navn.';return;}
-  const digits=orderRaw.replace(/\D/g,'');
-  const order=digits.length>7?digits.slice(-7):digits;
-  if(order.length!==7){msg.textContent='Ordrenummer må være nøyaktig 7 siffer.';return;}
-  if(!order.startsWith('4')){msg.textContent='Ordrenummer må starte på 4.';return;}
+
+  let order='';
+  // Format 1: B1 + 7 siffer (NS/PORT) — f.eks. B1039487
+  const bMatch=orderRaw.match(/B(\d{7})$/);
+  // Format 2: 7 siffer som starter på 4 (FIBER/TBB) — f.eks. 4489236
+  const nMatch=orderRaw.match(/4\d{6}$/);
+
+  if(bMatch){
+    order='B'+bMatch[1];
+  } else if(nMatch){
+    order=nMatch[0];
+  } else {
+    msg.textContent='Ugyldig ordrenummer. Bruk 4xxxxxx (fiber) eller B1xxxxxx (NS/PORT).';return;
+  }
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
@@ -544,19 +560,48 @@ const parseTSV=txt=>{
     const consultant=c[0].trim(),date_of_sale=c[1].trim(),week=c[2].trim();
     const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
     const product=c[4].trim();
+    const order_number=c[5]?c[5].trim():'historisk';
     if(!consultant)continue;
-    rows.push({consultant,date_of_sale,week,value,product});
+    rows.push({consultant,date_of_sale,week,value,product,order_number});
   }
   return rows;
 };
+
 window.addData=async()=>{
   const txt=document.getElementById('paste-area').value;
   const rows=parseTSV(txt);
   if(!rows.length){alert('Ingen gyldige rader.');return;}
   const msg=document.getElementById('add-msg');
   msg.textContent='Laster opp '+rows.length+' rader...';
-  const {error}=await sb.from('sales').insert(rows);
+
+  // Insert into sales
+  const salesRows=rows.map(r=>({consultant:r.consultant,date_of_sale:r.date_of_sale,week:r.week,value:r.value,product:r.product}));
+  const {error}=await sb.from('sales').insert(salesRows);
   if(error){msg.textContent='Feil: '+error.message;return;}
+
+  // Also insert into registrations
+  const regRows=rows.map(r=>{
+    const dateParts=r.date_of_sale.split('.');
+    const dateObj=dateParts.length===3?new Date(+dateParts[2],+dateParts[1]-1,+dateParts[0]):new Date();
+    const monthName=MONTHS[dateObj.getMonth()+1]||'';
+    const weekNum=r.week||getISOWeek(dateObj);
+    const cons=consultants.find(c=>c.name.toLowerCase().startsWith(r.consultant.toLowerCase())||c.name.split(' ')[0].toLowerCase()===r.consultant.toLowerCase());
+    return{
+      consultant:cons?cons.name:r.consultant,
+      ep_user:cons?cons.ep_user:'ukjent',
+      date_sold:r.date_of_sale,
+      month_name:monthName,
+      week_number:weekNum,
+      team:'Fiber Oslo',
+      order_number:r.order_number,
+      nettbutikk:'0',
+      quantity:1,
+      product:r.product,
+      cpo:r.value
+    };
+  });
+  await sb.from('registrations').insert(regRows);
+
   document.getElementById('paste-area').value='';
   msg.textContent='✓ '+rows.length+' rader lastet opp!';
   setTimeout(()=>{msg.textContent='';window.closeModal('add-modal');},2000);
