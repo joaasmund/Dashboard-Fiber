@@ -496,22 +496,29 @@ window.submitReg=async()=>{
   const orderRaw=document.getElementById('reg-order').value.trim().toUpperCase();
   const msg=document.getElementById('reg-msg');
   if(!name){msg.textContent='Velg navn.';return;}
-
-  let order='';
-  // Format 1: B1 + 7 siffer (NS/PORT) — f.eks. B1039487
-  const bMatch=orderRaw.match(/B(\d{7})$/);
-  // Format 2: 7 siffer som starter på 4 (FIBER/TBB) — f.eks. 4489236
-  const nMatch=orderRaw.match(/4\d{6}$/);
-
-  if(bMatch){
-    order='B'+bMatch[1];
-  } else if(nMatch){
-    order=nMatch[0];
-  } else {
-    msg.textContent='Ugyldig ordrenummer. Bruk 4xxxxxx (fiber) eller B1xxxxxx (NS/PORT).';return;
-  }
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
+
+  // Sjekk om valgte produkter er NS/PORT eller FIBER/TBB
+  const hasNSorPORT=selected.some(p=>p.name.startsWith('NS ')||p.name.startsWith('PORT '));
+  const hasFiberTBB=selected.some(p=>!p.name.startsWith('NS ')&&!p.name.startsWith('PORT '));
+
+  if(hasNSorPORT&&hasFiberTBB){
+    msg.textContent='Du kan ikke blande NS/PORT-produkter med FIBER/TBB i samme registrering — de bruker ulike ordrenummerformat.';return;
+  }
+
+  let order='';
+  if(hasNSorPORT){
+    // Krever B + 7 siffer
+    const bMatch=orderRaw.match(/B(\d{7})$/);
+    if(!bMatch){msg.textContent='NS/PORT-produkter krever ordrenummer på formatet B1xxxxxx (f.eks. B1039487).';return;}
+    order='B'+bMatch[1];
+  } else {
+    // Krever 7 siffer som starter på 4
+    const nMatch=orderRaw.match(/4\d{6}$/);
+    if(!nMatch){msg.textContent='Fiber/TBB-produkter krever ordrenummer på 7 siffer som starter på 4 (f.eks. 4489236).';return;}
+    order=nMatch[0];
+  }
 
   const cons=consultants.find(c=>c.name===name);
   if(!cons){msg.textContent='Fant ikke konsulenten.';return;}
