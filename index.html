@@ -154,8 +154,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <div class="live-pill"><span class="ld" id="sync-dot"></span><span id="sync-lbl">Kobler til...</span><span id="clock" style="margin-left:6px"></span></div>
       <div class="actions">
         <button class="btn btn-green" onclick="openM('reg-modal')"><i class="ti ti-plus"></i> Registrer salg</button>
-        <button class="btn btn-pink" onclick="openAnnAdmin()"><i class="ti ti-speakerphone"></i> Kunngjøring</button>
-        <button class="btn btn-blue" onclick="openM('add-modal')"><i class="ti ti-table-import"></i> Lim inn data</button>
+        <button class="btn btn-pink" onclick="requireAdmin(openAnnAdmin)"><i class="ti ti-speakerphone"></i> Kunngjøring</button>
+        <button class="btn btn-blue" onclick="requireAdmin(()=>openM('add-modal'))"><i class="ti ti-table-import"></i> Lim inn data</button>
         <button class="btn btn-amber" onclick="openAdmin()"><i class="ti ti-lock"></i> Admin</button>
       </div>
     </div>
@@ -577,12 +577,20 @@ function updateLeadPriceFields(){
   }
 }
 
+const WIFI_INNE='WIFI CONNECT INNE';
+const QTY_ADDONS=['SAFEZONE INTERNETT','5G Reserve'];
+
 function updateOrderInputs(){
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   const primaries=selected.filter(p=>isPrimaryProduct(p));
-  const addons=selected.filter(p=>isAddon(p));
+  const addons=selected.filter(p=>isAddon(p)&&!isLead(p));
   const container=document.getElementById('order-inputs');
   const addonSection=document.getElementById('addon-order-section');
+
+  // Valider WIFI CONNECT INNE antall
+  const wifiInne=addons.find(p=>p.name===WIFI_INNE);
+  const fiberCount=primaries.length||1;
+  const maxWifi=fiberCount*4;
 
   // Bygg ordrenummer-felt for primærprodukter
   container.innerHTML='';
@@ -597,26 +605,90 @@ function updateOrderInputs(){
     });
   }
 
-  // Bygg addon-tilordning hvis flere primærprodukter og addons
-  if(addonSection){
-    if(addons.length>0&&primaries.length>1){
-      addonSection.style.display='block';
-      addonSection.innerHTML='<div class="lbl" style="margin-bottom:8px;margin-top:4px">Velg ordrenummer for tilleggstjenester</div>'+
-        addons.map((a,i)=>`
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <span style="font-size:11px;color:rgba(255,255,255,.4);min-width:130px">${a.name}</span>
-            <select class="sel" id="addon-order-${i}" style="flex:1">
-              ${primaries.map((p,pi)=>`<option value="${pi}">${p.name}</option>`).join('')}
+  if(!addonSection) return;
+
+  if(addons.length===0){addonSection.style.display='none';addonSection.innerHTML='';return;}
+
+  let html='<div style="margin-top:6px">';
+
+  addons.forEach((a,i)=>{
+    const isWifi=a.name===WIFI_INNE;
+    const isQtyAddon=QTY_ADDONS.includes(a.name);
+    const has2=primaries.length===2;
+
+    html+=`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;margin-bottom:8px">`;
+    html+=`<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#f1f5f9">${a.name}</div>`;
+
+    if(isWifi){
+      // WIFI CONNECT INNE: antall + fordeling per ordrenummer
+      const maxQ=maxWifi;
+      html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;color:rgba(255,255,255,.4)">Antall aksesspunkter (maks ${maxQ})</span>
+        <select class="sel" id="wifi-qty" style="width:80px" onchange="updateWifiDistrib()">
+          ${Array.from({length:maxQ},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('')}
+        </select>
+        <span style="font-size:11px;color:rgba(255,255,255,.3)">× 750 kr</span>
+      </div>`;
+      if(has2){
+        html+=`<div id="wifi-distrib" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:11px;color:rgba(255,255,255,.4)">Fordeling:</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:rgba(255,255,255,.4)">${primaries[0].name}:</span>
+            <select class="sel" id="wifi-split-0" style="width:60px" onchange="updateWifiSplit()">
+              ${Array.from({length:5},(_,n)=>`<option value="${n}">${n}</option>`).join('')}
             </select>
-          </div>`).join('');
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:rgba(255,255,255,.4)">${primaries[1].name}:</span>
+            <span id="wifi-split-1-display" style="font-size:12px;font-weight:700;color:#a5b4fc">0</span>
+          </div>
+        </div>`;
+      }
+    } else if(isQtyAddon){
+      // SAFEZONE og 5G Reserve: maks 1 per fiber, velg ordrenummer eller Begge
+      html+=`<div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:rgba(255,255,255,.4)">Tilhører</span>
+        <select class="sel" id="addon-order-${i}" style="flex:1">
+          ${primaries.map((p,pi)=>`<option value="${pi}">${p.name}</option>`).join('')}
+          ${has2?'<option value="both">Begge</option>':''}
+        </select>
+      </div>`;
     } else {
-      addonSection.style.display='none';
-      addonSection.innerHTML='';
+      // Andre addons: velg ordrenummer
+      if(has2){
+        html+=`<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:rgba(255,255,255,.4)">Tilhører</span>
+          <select class="sel" id="addon-order-${i}" style="flex:1">
+            ${primaries.map((p,pi)=>`<option value="${pi}">${p.name}</option>`).join('')}
+          </select>
+        </div>`;
+      }
     }
-  }
+    html+='</div>';
+  });
+
+  html+='</div>';
+  addonSection.style.display='block';
+  addonSection.innerHTML=html;
 
   if(document.getElementById('split-toggle').checked) updateSplitPreview();
 }
+
+window.updateWifiDistrib=()=>{
+  const qty=parseInt(document.getElementById('wifi-qty')?.value||'1');
+  const splitSel=document.getElementById('wifi-split-0');
+  if(!splitSel)return;
+  splitSel.innerHTML=Array.from({length:qty+1},(_,n)=>`<option value="${n}">${n}</option>`).join('');
+  updateWifiSplit();
+};
+
+window.updateWifiSplit=()=>{
+  const qty=parseInt(document.getElementById('wifi-qty')?.value||'1');
+  const s0=parseInt(document.getElementById('wifi-split-0')?.value||'0');
+  const s1=qty-s0;
+  const disp=document.getElementById('wifi-split-1-display');
+  if(disp)disp.textContent=s1;
+};
 
 function populateRegSelect(){
   const sel=document.getElementById('reg-name');
@@ -700,18 +772,64 @@ window.submitReg=async()=>{
     orders.push(order);
   }
 
-  // Bygg produkt → ordrenummer mapping
+  // Bygg produkt → ordrenummer mapping + antall per produkt
   const productOrderMap=new Map();
-  primaries.forEach((p,i)=>productOrderMap.set(p,orders[i]||orders[0]));
+  const productQtyMap=new Map();
+  primaries.forEach((p,i)=>{productOrderMap.set(p,orders[i]||orders[0]);productQtyMap.set(p,1);});
 
-  // Addons: hvis ett primærprodukt → samme ordrenummer, hvis flere → bruker dropdown
+  // Addons
   addons.forEach((a,i)=>{
-    if(primaries.length<=1){
-      productOrderMap.set(a,orders[0]);
-    } else {
+    const isWifi=a.name===WIFI_INNE;
+    const isQtyAddon=QTY_ADDONS.includes(a.name);
+    const has2=primaries.length===2;
+
+    if(isWifi){
+      const qty=parseInt(document.getElementById('wifi-qty')?.value||'1');
+      if(has2){
+        const s0=parseInt(document.getElementById('wifi-split-0')?.value||'0');
+        const s1=qty-s0;
+        // Lag separate entries for hvert ordrenummer
+        if(s0>0){
+          const clone0={...a,_wifiQty:s0};
+          productOrderMap.set(clone0,orders[0]);
+          productQtyMap.set(clone0,s0);
+          addons[i]=clone0; // replace
+        }
+        if(s1>0){
+          const clone1={...a,_wifiQty:s1,_wifiSplit:true};
+          productOrderMap.set(clone1,orders[1]);
+          productQtyMap.set(clone1,s1);
+          if(s0>0) addons.push(clone1); else {addons[i]=clone1;}
+        }
+      } else {
+        productOrderMap.set(a,orders[0]);
+        productQtyMap.set(a,qty);
+      }
+    } else if(isQtyAddon){
       const sel=document.getElementById(`addon-order-${i}`);
-      const idx=sel?parseInt(sel.value):0;
-      productOrderMap.set(a,orders[idx]||orders[0]);
+      const val=sel?sel.value:'0';
+      if(val==='both'&&has2){
+        // Legg til på begge ordrenumre
+        const clone={...a,_both:true};
+        productOrderMap.set(a,orders[0]);
+        productQtyMap.set(a,1);
+        productOrderMap.set(clone,orders[1]);
+        productQtyMap.set(clone,1);
+        addons.push(clone);
+      } else {
+        const idx=parseInt(val)||0;
+        productOrderMap.set(a,orders[idx]||orders[0]);
+        productQtyMap.set(a,1);
+      }
+    } else {
+      if(primaries.length<=1){
+        productOrderMap.set(a,orders[0]);
+      } else {
+        const sel=document.getElementById(`addon-order-${i}`);
+        const idx=sel?parseInt(sel.value):0;
+        productOrderMap.set(a,orders[idx]||orders[0]);
+      }
+      productQtyMap.set(a,1);
     }
   });
 
@@ -780,22 +898,24 @@ window.submitReg=async()=>{
   const regRows=[];
   const salesRows=[];
 
-  selected.forEach(p=>{
+  const allProducts=[...productOrderMap.keys()];
+  allProducts.forEach(p=>{
     const pOrder=productOrderMap.get(p)||orders[0];
-    const effectiveCpo=p._cpo||p.cpo;
+    const qty=productQtyMap.get(p)||1;
+    const effectiveCpo=(p._cpo||p.cpo)*qty;
     const myVal=isSplit?Math.round(effectiveCpo*myPct/100):effectiveCpo;
     const otherVal=isSplit?(effectiveCpo-myVal):0;
 
     regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
       month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-      order_number:pOrder,nettbutikk:'0',quantity:p._qty||1,product:p.name,cpo:myVal});
+      order_number:pOrder,nettbutikk:'0',quantity:qty,product:p.name,cpo:myVal});
     salesRows.push({consultant:cons.name.split(' ')[0],date_of_sale:today,
       week:String(weekNum),value:myVal,product:p.name});
 
     if(isSplit&&splitCons){
       regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
         month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-        order_number:pOrder,nettbutikk:'0',quantity:p._qty||1,product:p.name,cpo:otherVal});
+        order_number:pOrder,nettbutikk:'0',quantity:qty,product:p.name,cpo:otherVal});
       salesRows.push({consultant:splitCons.name.split(' ')[0],date_of_sale:today,
         week:String(weekNum),value:otherVal,product:p.name});
     }
@@ -969,18 +1089,34 @@ window.clearEdit=async()=>{
 };
 
 // Admin
-window.openAdmin=()=>{
+// Admin-tilgang med session-hukommelse
+let adminUnlocked=false;
+let pendingAdminAction=null;
+
+window.requireAdmin=(action)=>{
+  if(adminUnlocked){action();return;}
+  pendingAdminAction=action;
   document.getElementById('admin-pw').value='';
   document.getElementById('pw-msg').textContent='';
   window.openM('admin-pw-modal');
 };
+
+window.openAdmin=()=>{
+  if(adminUnlocked){
+    loadRegistrations();renderConsList();showAdminTab('log');window.openM('admin-modal');return;
+  }
+  pendingAdminAction=()=>{loadRegistrations();renderConsList();showAdminTab('log');window.openM('admin-modal');};
+  document.getElementById('admin-pw').value='';
+  document.getElementById('pw-msg').textContent='';
+  window.openM('admin-pw-modal');
+};
+
 window.checkAdmin=()=>{
   if(document.getElementById('admin-pw').value==='2024'){
+    adminUnlocked=true;
+    setTimeout(()=>{adminUnlocked=false;},30*60*1000);
     window.closeModal('admin-pw-modal');
-    loadRegistrations();
-    renderConsList();
-    showAdminTab('log');
-    window.openM('admin-modal');
+    if(pendingAdminAction){pendingAdminAction();pendingAdminAction=null;}
   } else {
     document.getElementById('pw-msg').textContent='Feil kode.';
   }
