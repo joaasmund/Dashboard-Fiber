@@ -740,30 +740,37 @@ window.submitReg=async()=>{
 
   msg.textContent='Sjekker ordrenummer...';
 
-  // Sjekk duplikat-ordrenummer
-  for(let i=0;i<orders.length;i++){
-    const {data:existing}=await sb.from('registrations').select('consultant,product').eq('order_number',orders[i]);
-    if(existing&&existing.length>0){
-      if(!isSplit){
-        // Ikke splitt — ingen kan bruke samme ordrenummer to ganger
-        msg.textContent=`Ordrenummer ${orders[i]} er allerede registrert. Hvert ordrenummer kan kun brukes én gang.`;
-        return;
-      } else {
-        // Splitt — sjekk om samme selger allerede har lagt inn dette ordrenummeret
-        const alreadyByMe=existing.some(r=>r.consultant.toLowerCase()===cons.name.toLowerCase());
-        const alreadyByOther=splitCons&&existing.some(r=>r.consultant.toLowerCase()===splitCons.name.toLowerCase());
-        if(alreadyByMe){
-          msg.textContent=`Du har allerede registrert ordrenummer ${orders[i]}. Duplikat ikke tillatt.`;return;
-        }
-        if(alreadyByOther){
-          msg.textContent=`${splitCons.name.split(' ')[0]} har allerede registrert ordrenummer ${orders[i]}. Kun én registrering per splitt er nødvendig.`;return;
-        }
-        // Sjekk om det allerede er en splitt på dette ordrenummeret (2 selgere)
-        const uniqueConsultants=new Set(existing.map(r=>r.consultant.toLowerCase()));
-        if(uniqueConsultants.size>=2){
-          msg.textContent=`Ordrenummer ${orders[i]} har allerede to selgere registrert. Kan ikke legge til flere.`;return;
-        }
-      }
+  // Hent alle unike ordrenumre som vil bli brukt
+  const allOrderNums=[...new Set([...productOrderMap.values()])].filter(Boolean);
+
+  for(const ord of allOrderNums){
+    const {data:existing}=await sb.from('registrations')
+      .select('consultant,product,order_number')
+      .or(`order_number.eq.${ord},order_number.eq.${ord.toLowerCase()},order_number.eq.${ord.toUpperCase()}`);
+
+    // Filtrer bort historiske og tomme rader
+    const real=(existing||[]).filter(r=>
+      r.order_number&&
+      r.order_number.trim().toLowerCase()!=='historisk'&&
+      r.order_number.trim().toLowerCase()===ord.trim().toLowerCase()
+    );
+
+    if(real.length===0) continue;
+
+    const uniqueCons=new Set(real.map(r=>r.consultant.toLowerCase().trim()));
+
+    if(!isSplit){
+      msg.textContent=`Ordrenummer ${ord} er allerede registrert av ${[...uniqueCons].join(' og ')}. Bruk splitt hvis salget deles.`;
+      return;
+    } else {
+      const myKey=cons.name.toLowerCase().trim();
+      const otherKey=splitCons?splitCons.name.toLowerCase().trim():'';
+      const alreadyByMe=real.some(r=>r.consultant.toLowerCase().trim()===myKey);
+      const alreadyByOther=real.some(r=>r.consultant.toLowerCase().trim()===otherKey);
+
+      if(alreadyByMe){msg.textContent=`Du har allerede registrert ordrenummer ${ord}.`;return;}
+      if(alreadyByOther){msg.textContent=`${splitCons.name.split(' ')[0]} har allerede registrert ordrenummer ${ord}.`;return;}
+      if(uniqueCons.size>=2){msg.textContent=`Ordrenummer ${ord} har allerede to selgere. Kan ikke legge til flere.`;return;}
     }
   }
 
