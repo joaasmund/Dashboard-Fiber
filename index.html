@@ -307,6 +307,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <div style="overflow-x:auto;max-height:60vh;overflow-y:auto">
         <table class="admin-table" id="admin-table">
           <thead><tr>
+            <th></th>
             <th>Konsulent</th><th>ep-bruker</th><th>Dato solgt</th><th>Måned</th><th>Uke</th><th>Team</th><th>Ordrenr.</th><th>Nettbutikk</th><th>Antall</th><th>Produkt</th><th>CPO</th>
           </tr></thead>
           <tbody id="admin-tbody"></tbody>
@@ -490,8 +491,9 @@ window.submitReg=async()=>{
   const msg=document.getElementById('reg-msg');
   if(!name){msg.textContent='Velg navn.';return;}
   const digits=orderRaw.replace(/\D/g,'');
-  const order=digits.slice(-7);
-  if(!order||order.length!==7){msg.textContent='Ordrenummeret må inneholde minst 7 siffer.';return;}
+  const order=digits.length>7?digits.slice(-7):digits;
+  if(order.length!==7){msg.textContent='Ordrenummer må være nøyaktig 7 siffer.';return;}
+  if(!order.startsWith('4')){msg.textContent='Ordrenummer må starte på 4.';return;}
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
@@ -682,6 +684,7 @@ function renderAdminTable(){
     rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
   }
   tbody.innerHTML=rows.map(r=>`<tr>
+    <td><button onclick="deleteReg('${r.id}')" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif"><i class="ti ti-trash"></i></button></td>
     <td>${r.consultant}</td><td>${r.ep_user}</td><td>${r.date_sold}</td>
     <td>${r.month_name}</td><td>${r.week_number}</td><td>${r.team}</td>
     <td>${r.order_number}</td><td>${r.nettbutikk||'0'}</td><td>${r.quantity||1}</td>
@@ -720,7 +723,24 @@ function renderConsList(){
       <button class="mbtn mb-red" style="padding:4px 10px;font-size:10px" onclick="removeConsultant('${c.id}')">Fjern</button>
     </div>`).join('');
 }
-window.updateConsTeam=async(id,team_name)=>{
+window.deleteReg=async(id)=>{
+  if(!confirm('Slette denne linjen fra adminloggen?'))return;
+  // Find the registration to also remove from sales
+  const reg=registrations.find(r=>r.id===id);
+  const {error}=await sb.from('registrations').delete().eq('id',id);
+  if(error){alert('Feil: '+error.message);return;}
+  // Also try to remove matching row from sales
+  if(reg){
+    await sb.from('sales').delete()
+      .eq('consultant',reg.consultant.split(' ')[0])
+      .eq('date_of_sale',reg.date_sold)
+      .eq('product',reg.product)
+      .eq('value',reg.cpo)
+      .limit(1);
+  }
+  document.getElementById('admin-msg').textContent='✓ Linje slettet.';
+  setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
+};
   await sb.from('consultants').update({team_name}).eq('id',id);
 };
 window.addConsultant=async()=>{
