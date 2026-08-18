@@ -261,9 +261,10 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
         <div id="order-inputs">
           <input class="inp" id="reg-order-0" type="text" placeholder="F.eks. 7656754 eller Case-07656754" style="margin-bottom:6px">
         </div>
-        <span class="hint">Fiber/TBB: 7 siffer eller Case-0xxxxxxx · NS/PORT: B + 7 siffer (f.eks. B1039487) · Maks 1 Fiber per ordrenummer</span>
+        <span class="hint">Fiber/TBB: 7 siffer · NS/PORT: 11 siffer · Maks 1 primærprodukt per ordrenummer</span>
       </div>
     </div>
+    <div id="addon-order-section" style="display:none;margin-bottom:14px"></div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
     <div class="prod-grid" id="prod-grid"></div>
 
@@ -383,9 +384,9 @@ const PRODUCTS=[
   {name:'FIBER 200',cpo:12000},{name:'FIBER 400',cpo:12000},{name:'FIBER 600',cpo:12000},
   {name:'FIBER 1GB',cpo:12000},{name:'TBB 20',cpo:3000},{name:'TBB 40',cpo:3000},
   {name:'TBB 60',cpo:3000},{name:'TBB 100',cpo:3000},{name:'TBB 200',cpo:4500},
-  {name:'TBB 400',cpo:4500},{name:'WIFI CONNECT AKS',cpo:250},{name:'SLA MBU',cpo:700},
-  {name:'SLA FIBER',cpo:700},{name:'SAFEZONE INTERNETT',cpo:250},{name:'LEAD WIFI CONNECT',cpo:700},
-  {name:'LEAD WIFI AKS',cpo:250},{name:'WIFI CONNECT INNE',cpo:750},{name:'5G Reserve',cpo:400},
+  {name:'TBB 400',cpo:4500},{name:'WIFI CONNECT AKS',cpo:250},
+  {name:'SAFEZONE INTERNETT',cpo:250},{name:'LEAD WIFI CONNECT',cpo:700},
+  {name:'WIFI CONNECT INNE',cpo:750},{name:'5G Reserve',cpo:400},
   {name:'NS BASIS',cpo:650},{name:'NS BASIS TALE',cpo:900},{name:'NS BASIS DATA',cpo:900},
   {name:'NS FLYT 5',cpo:1700},{name:'NS FLYT 20',cpo:2500},{name:'NS FLYT 50',cpo:2500},
   {name:'NS FRIHET',cpo:2750},{name:'NS PREMIUM',cpo:3000},{name:'NS BED TOTAL',cpo:900},
@@ -393,6 +394,12 @@ const PRODUCTS=[
   {name:'PORT FLYT 5',cpo:1700},{name:'PORT FLYT 20',cpo:2500},{name:'PORT FLYT 50',cpo:2500},
   {name:'PORT FRIHET',cpo:2750},{name:'PORT PREMIUM',cpo:3000},{name:'PORT BED TOTAL',cpo:900}
 ];
+
+// Produkttyper
+const isPrimaryProduct=p=>isF(p.name)||p.name.startsWith('TBB ')||p.name.startsWith('NS ')||p.name.startsWith('PORT ');
+const isAddon=p=>!isPrimaryProduct(p);
+// Addons som arver ordrenummer fra primærprodukt
+const ADDON_NAMES=['WIFI CONNECT AKS','SAFEZONE INTERNETT','LEAD WIFI CONNECT','WIFI CONNECT INNE','5G Reserve'];
 
 const ALIAS={'alexander':'rognstad','aleksander':'rognstad','aleksander rognstad':'rognstad'};
 const AC=[['#6366f1','#1e1b4b'],['#10b981','#052e16'],['#f59e0b','#2d1d00'],['#8b5cf6','#2e1065'],['#ec4899','#500724'],['#14b8a6','#042f2e'],['#3b82f6','#1e3a5f'],['#ef4444','#450a0a'],['#a855f7','#3b0764'],['#22c55e','#052e16'],['#06b6d4','#082f49'],['#f97316','#431407'],['#84cc16','#1a2e05'],['#e879f9','#4a044e']];
@@ -520,23 +527,43 @@ window.toggleProd=i=>{
 
 function updateOrderInputs(){
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
-  const fiberCount=selected.filter(p=>isF(p.name)).length;
-  const needed=Math.max(fiberCount,1);
+  const primaries=selected.filter(p=>isPrimaryProduct(p));
+  const addons=selected.filter(p=>isAddon(p));
   const container=document.getElementById('order-inputs');
-  const current=container.querySelectorAll('input').length;
-  if(needed>current){
-    for(let i=current;i<needed;i++){
-      const inp=document.createElement('input');
-      inp.className='inp';inp.id=`reg-order-${i}`;
-      inp.placeholder=`Ordrenummer for Fiber ${i+1}`;
-      inp.style.marginBottom='6px';
-      container.appendChild(inp);
-    }
-  } else if(needed<current){
-    const inputs=container.querySelectorAll('input');
-    for(let i=needed;i<inputs.length;i++) inputs[i].remove();
-    if(needed===1) container.querySelector('input').placeholder='F.eks. 7656754 eller Case-07656754';
+  const addonSection=document.getElementById('addon-order-section');
+
+  // Bygg ordrenummer-felt for primærprodukter
+  container.innerHTML='';
+  if(primaries.length===0){
+    container.innerHTML='<input class="inp" id="reg-order-0" type="text" placeholder="Ordrenummer" style="margin-bottom:6px">';
+  } else {
+    primaries.forEach((p,i)=>{
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px';
+      wrap.innerHTML=`<input class="inp" id="reg-order-${i}" type="text" placeholder="Ordrenummer for ${p.name}" style="flex:1">`;
+      container.appendChild(wrap);
+    });
   }
+
+  // Bygg addon-tilordning hvis flere primærprodukter og addons
+  if(addonSection){
+    if(addons.length>0&&primaries.length>1){
+      addonSection.style.display='block';
+      addonSection.innerHTML='<div class="lbl" style="margin-bottom:8px;margin-top:4px">Velg ordrenummer for tilleggstjenester</div>'+
+        addons.map((a,i)=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:11px;color:rgba(255,255,255,.4);min-width:130px">${a.name}</span>
+            <select class="sel" id="addon-order-${i}" style="flex:1">
+              ${primaries.map((p,pi)=>`<option value="${pi}">${p.name}</option>`).join('')}
+            </select>
+          </div>`).join('');
+    } else {
+      addonSection.style.display='none';
+      addonSection.innerHTML='';
+    }
+  }
+
+  if(document.getElementById('split-toggle').checked) updateSplitPreview();
 }
 
 function populateRegSelect(){
@@ -582,39 +609,46 @@ window.submitReg=async()=>{
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
-  const hasNSorPORT=selected.some(p=>p.name.startsWith('NS ')||p.name.startsWith('PORT '));
-  const hasFiberTBB=selected.some(p=>!p.name.startsWith('NS ')&&!p.name.startsWith('PORT '));
+  const primaries=selected.filter(p=>isPrimaryProduct(p));
+  const addons=selected.filter(p=>isAddon(p));
+
+  const hasNSorPORT=primaries.some(p=>p.name.startsWith('NS ')||p.name.startsWith('PORT '));
+  const hasFiberTBB=primaries.some(p=>isF(p.name)||p.name.startsWith('TBB '));
   if(hasNSorPORT&&hasFiberTBB){msg.textContent='Du kan ikke blande NS/PORT med FIBER/TBB i samme registrering.';return;}
 
-  // Les alle ordrenumre
+  // Les og valider ordrenumre for primærprodukter
   const orderInputs=document.getElementById('order-inputs').querySelectorAll('input');
   const orders=[];
   for(let i=0;i<orderInputs.length;i++){
     const raw=orderInputs[i].value.trim().toUpperCase();
     let order='';
     if(hasNSorPORT){
-      const bMatch=raw.match(/B(\d{7})$/);
-      if(!bMatch){msg.textContent='NS/PORT krever B + 7 siffer (f.eks. B1039487).';return;}
-      order='B'+bMatch[1];
+      const digits=raw.replace(/\D/g,'');
+      if(digits.length!==11){msg.textContent=`Ordrenummer ${i+1}: NS/PORT krever nøyaktig 11 siffer.`;return;}
+      order=digits;
     } else {
       const digits=raw.replace(/\D/g,'');
       const last7=digits.slice(-7);
-      if(!last7||last7.length!==7){msg.textContent=`Ordrenummer ${i+1} er ugyldig — må være 7 siffer.`;return;}
+      if(!last7||last7.length!==7){msg.textContent=`Ordrenummer ${i+1}: Fiber/TBB krever 7 siffer.`;return;}
       order=last7;
     }
     orders.push(order);
   }
 
-  // Tilordne ordrenumre: ett per Fiber-produkt, resten bruker første
-  const fiberProducts=selected.filter(p=>isF(p.name));
-  const otherProducts=selected.filter(p=>!isF(p.name));
-  if(fiberProducts.length!==orders.length&&orders.length>1){
-    msg.textContent='Antall ordrenumre stemmer ikke med antall Fiber-produkter.';return;
-  }
-  // Map hvert produkt til riktig ordrenummer
+  // Bygg produkt → ordrenummer mapping
   const productOrderMap=new Map();
-  fiberProducts.forEach((p,i)=>productOrderMap.set(p,orders[i]||orders[0]));
-  otherProducts.forEach(p=>productOrderMap.set(p,orders[0]));
+  primaries.forEach((p,i)=>productOrderMap.set(p,orders[i]||orders[0]));
+
+  // Addons: hvis ett primærprodukt → samme ordrenummer, hvis flere → bruker dropdown
+  addons.forEach((a,i)=>{
+    if(primaries.length<=1){
+      productOrderMap.set(a,orders[0]);
+    } else {
+      const sel=document.getElementById(`addon-order-${i}`);
+      const idx=sel?parseInt(sel.value):0;
+      productOrderMap.set(a,orders[idx]||orders[0]);
+    }
+  });
 
   const cons=consultants.find(c=>c.name===name);
   if(!cons){msg.textContent='Fant ikke konsulenten.';return;}
@@ -675,7 +709,9 @@ window.submitReg=async()=>{
     document.getElementById(`plbl-${i}`).classList.remove('sel-p');
   });
   const container=document.getElementById('order-inputs');
-  container.innerHTML='<input class="inp" id="reg-order-0" type="text" placeholder="F.eks. 7656754 eller Case-07656754" style="margin-bottom:6px">';
+  container.innerHTML='<input class="inp" id="reg-order-0" type="text" placeholder="Ordrenummer" style="margin-bottom:6px">';
+  const addonSec=document.getElementById('addon-order-section');
+  if(addonSec){addonSec.style.display='none';addonSec.innerHTML='';}
   document.getElementById('split-toggle').checked=false;
   document.getElementById('split-section').style.display='none';
   document.getElementById('split-name').value='';
