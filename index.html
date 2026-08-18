@@ -568,6 +568,7 @@ const parseTSV=txt=>{
     const consultant=c[0].trim(),date_of_sale=c[1].trim(),week=c[2].trim();
     const value=parseFloat(c[3].replace(/[^0-9.,]/g,'').replace(',','.'))||0;
     const product=c[4].trim();
+    // Ta ordrenummer som det er — trimmer kun whitespace
     const order_number=c[5]?c[5].trim():'historisk';
     if(!consultant)continue;
     rows.push({consultant,date_of_sale,week,value,product,order_number});
@@ -831,7 +832,21 @@ function render(){
 
   const mRows=allRows.filter(r=>gmk(r.dateStr)===lm);
 
-  const sd=consultants.filter(c=>c.active).map(c=>{
+  // Vis aktive konsulenter + inaktive som har salg denne måneden
+  const visibleConsultants=consultants.filter(c=>{
+    if(c.active) return true;
+    // Inaktiv men har salg denne måneden — vis frem til neste måned
+    const key=c.name.toLowerCase();
+    const firstName=c.name.split(' ')[0];
+    const lastName=c.name.split(' ').pop();
+    return mRows.some(r=>{
+      const rn=r.name.toLowerCase().trim();
+      const aliased=ALIAS[rn]||rn;
+      return aliased===key||aliased===lastName.toLowerCase()||rn===firstName.toLowerCase()||rn===key;
+    });
+  });
+
+  const sd=visibleConsultants.map(c=>{
     const key=c.name.toLowerCase();
     const firstName=c.name.split(' ')[0];
     const lastName=c.name.split(' ').pop();
