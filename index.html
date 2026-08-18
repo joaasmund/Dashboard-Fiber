@@ -755,7 +755,8 @@ window.addData=async()=>{
     const dateParts=r.date_of_sale.split('.');
     const dateObj=dateParts.length===3?new Date(+dateParts[2],+dateParts[1]-1,+dateParts[0]):new Date();
     const monthName=MONTHS[dateObj.getMonth()+1]||'';
-    const weekNum=r.week||getISOWeek(dateObj);
+    // Alltid beregn uke fra dato — ignorer uke-kolonnen
+    const weekNum=getISOWeek(dateObj);
     const cons=consultants.find(c=>c.name.toLowerCase().startsWith(r.consultant.toLowerCase())||c.name.split(' ')[0].toLowerCase()===r.consultant.toLowerCase());
     return{
       consultant:cons?cons.name:r.consultant,
