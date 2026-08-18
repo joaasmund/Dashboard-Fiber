@@ -259,7 +259,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <div class="fld">
         <span class="lbl">Ordrenummer</span>
         <input class="inp" id="reg-order" type="text" placeholder="F.eks. 4489236 eller Case-04489236">
-        <span class="hint">Fiber/TBB: 7 siffer som starter på 4 (f.eks. 4489236) · NS/PORT: B + 7 siffer (f.eks. B1039487)</span>
+        <span class="hint">Fiber/TBB: 7 siffer eller Case-0xxxxxxx (f.eks. 7656754 eller Case-07656754) · NS/PORT: B + 7 siffer (f.eks. B1039487)</span>
       </div>
     </div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
@@ -514,10 +514,11 @@ window.submitReg=async()=>{
     if(!bMatch){msg.textContent='NS/PORT-produkter krever ordrenummer på formatet B1xxxxxx (f.eks. B1039487).';return;}
     order='B'+bMatch[1];
   } else {
-    // Krever 7 siffer som starter på 4
-    const nMatch=orderRaw.match(/4\d{6}$/);
-    if(!nMatch){msg.textContent='Fiber/TBB-produkter krever ordrenummer på 7 siffer som starter på 4 (f.eks. 4489236).';return;}
-    order=nMatch[0];
+    // Krever 7 siffer — tar de siste 7 sifrene fra f.eks. Case-07656754
+    const digits=orderRaw.replace(/\D/g,'');
+    const last7=digits.slice(-7);
+    if(!last7||last7.length!==7){msg.textContent='Fiber/TBB-produkter krever 7-sifret ordrenummer (f.eks. 7656754 eller Case-07656754).';return;}
+    order=last7;
   }
 
   const cons=consultants.find(c=>c.name===name);
@@ -614,9 +615,13 @@ window.addData=async()=>{
   setTimeout(()=>{msg.textContent='';window.closeModal('add-modal');},2000);
 };
 window.resetData=async()=>{
-  if(!confirm('Slette ALLE salgsdata?'))return;
+  if(!confirm('Slette ALLE salgsdata fra dashboard OG adminlogg?'))return;
+  const msg=document.getElementById('add-msg');
+  msg.textContent='Sletter...';
   await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  document.getElementById('add-msg').textContent='✓ Slettet.';
+  await sb.from('registrations').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  msg.textContent='✓ Slettet fra begge tabeller.';
+  setTimeout(()=>{msg.textContent='';},2000);
 };
 
 // Announcement
