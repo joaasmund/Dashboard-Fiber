@@ -258,8 +258,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       </div>
       <div class="fld">
         <span class="lbl">Ordrenummer</span>
-        <input class="inp" id="reg-order" type="text" placeholder="F.eks. 4489236" maxlength="7">
-        <span class="hint">Kun de 7 sifrene bak 0-tallet i Case-nummer (Case-0<b>4489236</b>)</span>
+        <input class="inp" id="reg-order" type="text" placeholder="F.eks. 4489236 eller Case-04489236">
+        <span class="hint">Skriv hele Case-nummeret eller bare de siste 7 sifrene — vi henter ut riktig del automatisk</span>
       </div>
     </div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
@@ -471,10 +471,12 @@ function populateRegSelect(){
 
 window.submitReg=async()=>{
   const name=document.getElementById('reg-name').value;
-  const order=document.getElementById('reg-order').value.trim();
+  const orderRaw=document.getElementById('reg-order').value.trim();
   const msg=document.getElementById('reg-msg');
   if(!name){msg.textContent='Velg navn.';return;}
-  if(!order||order.length!==7||isNaN(order)){msg.textContent='Ordrenummer må være 7 siffer.';return;}
+  const digits=orderRaw.replace(/\D/g,'');
+  const order=digits.slice(-7);
+  if(!order||order.length!==7){msg.textContent='Ordrenummeret må inneholde minst 7 siffer.';return;}
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
