@@ -296,6 +296,13 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <button class="mbtn mb-cancel" onclick="showAdminTab('cons')" id="tab-cons">Konsulenter</button>
       <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Excel</button>
     </div>
+    <div id="team-filter-row" style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="mbtn mb-blue" id="tf-total" onclick="setTeamFilter('Total')">Total</button>
+      <button class="mbtn mb-cancel" id="tf-team1" onclick="setTeamFilter('Team 1')">Team 1</button>
+      <button class="mbtn mb-cancel" id="tf-team2" onclick="setTeamFilter('Team 2')">Team 2</button>
+      <button class="mbtn mb-cancel" id="tf-team3" onclick="setTeamFilter('Team 3')">Team 3</button>
+    </div>
+    </div>
     <div id="admin-log-section">
       <div style="overflow-x:auto;max-height:60vh;overflow-y:auto">
         <table class="admin-table" id="admin-table">
@@ -310,6 +317,14 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
         <div class="fld"><span class="lbl">Fullt navn</span><input class="inp" id="new-cons-name" type="text" placeholder="F.eks. Kalle Rode"></div>
         <div class="fld"><span class="lbl">ep-bruker</span><input class="inp" id="new-cons-user" type="text" placeholder="F.eks. t984474"></div>
+      </div>
+      <div class="fld" style="margin-bottom:14px">
+        <span class="lbl">Team</span>
+        <select class="sel" id="new-cons-team">
+          <option value="Team 1">Team 1</option>
+          <option value="Team 2">Team 2</option>
+          <option value="Team 3">Team 3</option>
+        </select>
       </div>
       <button class="mbtn mb-green" onclick="addConsultant()" style="margin-bottom:16px"><i class="ti ti-plus"></i> Legg til</button>
       <div id="cons-list"></div>
@@ -344,7 +359,7 @@ const SMAL=8,OMAL=80000;
 const MONTHS=['','Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
 
 let allRows=[],corrections=[],activeAnn=null,consultants=[],registrations=[];
-let currentSeller=null,currentMK=null;
+let currentSeller=null,currentMK=null,activeTeamFilter='Total';
 
 const gac=n=>{let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%AC.length;return AC[h];};
 const ini=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
@@ -643,14 +658,30 @@ window.showAdminTab=(tab)=>{
   document.getElementById('admin-log-section').style.display=tab==='log'?'block':'none';
   document.getElementById('admin-cons-section').style.display=tab==='cons'?'block':'none';
   document.getElementById('copy-log-btn').style.display=tab==='log'?'inline-flex':'none';
+  document.getElementById('team-filter-row').style.display=tab==='log'?'flex':'none';
   document.getElementById('tab-log').className='mbtn '+(tab==='log'?'mb-blue':'mb-cancel');
   document.getElementById('tab-cons').className='mbtn '+(tab==='cons'?'mb-blue':'mb-cancel');
+};
+
+window.setTeamFilter=filter=>{
+  activeTeamFilter=filter;
+  ['Total','Team 1','Team 2','Team 3'].forEach(t=>{
+    const id='tf-'+t.toLowerCase().replace(' ','');
+    const el=document.getElementById(id);
+    if(el)el.className='mbtn '+(t===filter?'mb-blue':'mb-cancel');
+  });
+  renderAdminTable();
 };
 
 function renderAdminTable(){
   const tbody=document.getElementById('admin-tbody');
   if(!tbody)return;
-  tbody.innerHTML=registrations.map(r=>`<tr>
+  let rows=registrations;
+  if(activeTeamFilter!=='Total'){
+    const teamMembers=consultants.filter(c=>c.team_name===activeTeamFilter).map(c=>c.name.toLowerCase());
+    rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
+  }
+  tbody.innerHTML=rows.map(r=>`<tr>
     <td>${r.consultant}</td><td>${r.ep_user}</td><td>${r.date_sold}</td>
     <td>${r.month_name}</td><td>${r.week_number}</td><td>${r.team}</td>
     <td>${r.order_number}</td><td>${r.nettbutikk||'0'}</td><td>${r.quantity||1}</td>
@@ -659,9 +690,14 @@ function renderAdminTable(){
 }
 
 window.copyLog=()=>{
+  let rows=registrations;
+  if(activeTeamFilter!=='Total'){
+    const teamMembers=consultants.filter(c=>c.team_name===activeTeamFilter).map(c=>c.name.toLowerCase());
+    rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
+  }
   const header='Konsulent\tep-bruker\tDato solgt\tMåned\tUke\tTeam\tOrdrenr.\tNettbutikk\tAntall\tProdukt\tCPO';
-  const rows=registrations.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo].join('\t'));
-  navigator.clipboard.writeText([header,...rows].join('\n'));
+  const lines=rows.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo].join('\t'));
+  navigator.clipboard.writeText([header,...lines].join('\n'));
   document.getElementById('admin-msg').textContent='✓ Kopiert til utklippstavlen!';
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
@@ -674,17 +710,26 @@ function renderConsList(){
     <div class="cons-row">
       <span class="cons-name">${c.name}</span>
       <span class="cons-user">${c.ep_user}</span>
+      <select class="sel" style="width:90px;padding:4px 8px;font-size:11px" onchange="updateConsTeam('${c.id}',this.value)">
+        <option ${c.team_name==='Team 1'?'selected':''}>Team 1</option>
+        <option ${c.team_name==='Team 2'?'selected':''}>Team 2</option>
+        <option ${c.team_name==='Team 3'?'selected':''}>Team 3</option>
+      </select>
       <span class="chip" style="font-size:10px;${c.active?'color:#34d399':'color:#f87171'}">${c.active?'Aktiv':'Inaktiv'}</span>
       <button class="mbtn ${c.active?'mb-amber':'mb-green'}" style="padding:4px 10px;font-size:10px" onclick="toggleConsultant('${c.id}',${c.active})">${c.active?'Deaktiver':'Aktiver'}</button>
       <button class="mbtn mb-red" style="padding:4px 10px;font-size:10px" onclick="removeConsultant('${c.id}')">Fjern</button>
     </div>`).join('');
 }
+window.updateConsTeam=async(id,team_name)=>{
+  await sb.from('consultants').update({team_name}).eq('id',id);
+};
 window.addConsultant=async()=>{
   const name=document.getElementById('new-cons-name').value.trim();
   const ep_user=document.getElementById('new-cons-user').value.trim();
+  const team_name=document.getElementById('new-cons-team').value;
   const msg=document.getElementById('admin-msg');
   if(!name||!ep_user){msg.textContent='Fyll inn navn og ep-bruker.';return;}
-  const {error}=await sb.from('consultants').insert({name,ep_user,active:true});
+  const {error}=await sb.from('consultants').insert({name,ep_user,active:true,team_name});
   if(error){msg.textContent='Feil: '+error.message;return;}
   document.getElementById('new-cons-name').value='';
   document.getElementById('new-cons-user').value='';
