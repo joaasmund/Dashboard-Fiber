@@ -264,6 +264,38 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     </div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
     <div class="prod-grid" id="prod-grid"></div>
+
+    <!-- Splitt salg -->
+    <div style="margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px">
+        <input type="checkbox" id="split-toggle" onchange="toggleSplit()" style="accent-color:#6366f1;width:16px;height:16px">
+        <span class="lbl" style="margin:0">Del salg med en annen selger</span>
+      </label>
+      <div id="split-section" style="display:none;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+          <div class="fld">
+            <span class="lbl">Medselger</span>
+            <select class="sel" id="split-name"></select>
+          </div>
+          <div class="fld">
+            <span class="lbl">Din andel (%)</span>
+            <select class="sel" id="split-pct" onchange="updateSplitPreview()">
+              <option value="10">10%</option>
+              <option value="20">20%</option>
+              <option value="30">30%</option>
+              <option value="40">40%</option>
+              <option value="50" selected>50%</option>
+              <option value="60">60%</option>
+              <option value="70">70%</option>
+              <option value="80">80%</option>
+              <option value="90">90%</option>
+            </select>
+          </div>
+        </div>
+        <div id="split-preview" style="font-size:12px;color:rgba(255,255,255,.5);background:rgba(0,0,0,.2);border-radius:7px;padding:8px 12px"></div>
+      </div>
+    </div>
+
     <div class="mbtns">
       <button class="mbtn mb-green" onclick="submitReg()"><i class="ti ti-check"></i> Registrer</button>
       <button class="mbtn mb-cancel" onclick="closeModal('reg-modal')">Avbryt</button>
@@ -484,12 +516,39 @@ window.toggleProd=i=>{
 
 function populateRegSelect(){
   const sel=document.getElementById('reg-name');
+  const splitSel=document.getElementById('split-name');
   const current=sel.value;
-  sel.innerHTML='<option value="">Velg navn...</option>'+
+  const opts='<option value="">Velg navn...</option>'+
+    consultants.filter(c=>c.active).sort((a,b)=>a.name.localeCompare(b.name))
+    .map(c=>`<option value="${c.name}">${c.name.split(' ')[0]} ${c.name.split(' ').pop()}</option>`).join('');
+  sel.innerHTML=opts;
+  splitSel.innerHTML='<option value="">Velg medselger...</option>'+
     consultants.filter(c=>c.active).sort((a,b)=>a.name.localeCompare(b.name))
     .map(c=>`<option value="${c.name}">${c.name.split(' ')[0]} ${c.name.split(' ').pop()}</option>`).join('');
   if(current)sel.value=current;
 }
+
+window.toggleSplit=()=>{
+  const on=document.getElementById('split-toggle').checked;
+  document.getElementById('split-section').style.display=on?'block':'none';
+  if(on)updateSplitPreview();
+};
+
+window.updateSplitPreview=()=>{
+  const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
+  const total=selected.reduce((a,p)=>a+p.cpo,0);
+  const myPct=parseInt(document.getElementById('split-pct').value);
+  const otherPct=100-myPct;
+  const mySum=Math.round(total*myPct/100);
+  const otherSum=total-mySum;
+  const otherName=document.getElementById('split-name').value;
+  const myName=document.getElementById('reg-name').value;
+  const kr=n=>new Intl.NumberFormat('nb-NO').format(n)+' kr';
+  document.getElementById('split-preview').innerHTML=
+    `Total: <b>${kr(total)}</b> &nbsp;|&nbsp; `+
+    `${myName?myName.split(' ')[0]:'Du'}: <b style="color:#34d399">${myPct}% = ${kr(mySum)}</b> &nbsp;|&nbsp; `+
+    `${otherName?otherName.split(' ')[0]:'Medselger'}: <b style="color:#a78bfa">${otherPct}% = ${kr(otherSum)}</b>`;
+};
 
 window.submitReg=async()=>{
   const name=document.getElementById('reg-name').value;
@@ -524,6 +583,20 @@ window.submitReg=async()=>{
   const cons=consultants.find(c=>c.name===name);
   if(!cons){msg.textContent='Fant ikke konsulenten.';return;}
 
+  // Sjekk splitt
+  const isSplit=document.getElementById('split-toggle').checked;
+  let splitCons=null,myPct=100,otherPct=0;
+  if(isSplit){
+    const splitName=document.getElementById('split-name').value;
+    if(!splitName){msg.textContent='Velg medselger.';return;}
+    if(splitName===name){msg.textContent='Du kan ikke dele med deg selv.';return;}
+    splitCons=consultants.find(c=>c.name===splitName);
+    if(!splitCons){msg.textContent='Fant ikke medselger.';return;}
+    myPct=parseInt(document.getElementById('split-pct').value);
+    otherPct=100-myPct;
+    if(myPct+otherPct!==100){msg.textContent='Prosentandel må summere til 100%.';return;}
+  }
+
   const today=todayStr();
   const dateParts=today.split('.');
   const dateObj=new Date(+dateParts[2],+dateParts[1]-1,+dateParts[0]);
@@ -532,19 +605,35 @@ window.submitReg=async()=>{
 
   msg.textContent='Registrerer...';
 
-  // Insert into registrations table
-  const regRows=selected.map(p=>({
-    consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
-    month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-    order_number:order,nettbutikk:'0',quantity:1,product:p.name,cpo:p.cpo
-  }));
+  // Bygg rader — splitt verdier per produkt
+  const regRows=[];
+  const salesRows=[];
+
+  selected.forEach(p=>{
+    const myVal=isSplit?Math.round(p.cpo*myPct/100):p.cpo;
+    const otherVal=isSplit?(p.cpo-myVal):0;
+
+    // Hovedselger
+    regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
+      month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
+      order_number:order,nettbutikk:'0',quantity:1,product:p.name,
+      cpo:myVal});
+    salesRows.push({consultant:cons.name.split(' ')[0],date_of_sale:today,
+      week:String(weekNum),value:myVal,product:p.name});
+
+    // Medselger hvis splitt
+    if(isSplit&&splitCons){
+      regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
+        month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
+        order_number:order,nettbutikk:'0',quantity:1,product:p.name,
+        cpo:otherVal});
+      salesRows.push({consultant:splitCons.name.split(' ')[0],date_of_sale:today,
+        week:String(weekNum),value:otherVal,product:p.name});
+    }
+  });
+
   const {error:regErr}=await sb.from('registrations').insert(regRows);
   if(regErr){msg.textContent='Feil: '+regErr.message;return;}
-
-  // Also insert into sales table for dashboard
-  const salesRows=selected.map(p=>({
-    consultant:cons.name.split(' ')[0],date_of_sale:today,week:String(weekNum),value:p.cpo,product:p.name
-  }));
   const {error:salesErr}=await sb.from('sales').insert(salesRows);
   if(salesErr){msg.textContent='Feil ved oppdatering av dashboard: '+salesErr.message;return;}
 
@@ -554,6 +643,10 @@ window.submitReg=async()=>{
     document.getElementById(`plbl-${i}`).classList.remove('sel-p');
   });
   document.getElementById('reg-order').value='';
+  document.getElementById('split-toggle').checked=false;
+  document.getElementById('split-section').style.display='none';
+  document.getElementById('split-name').value='';
+  document.getElementById('split-pct').value='50';
   msg.style.color='#34d399';
   msg.textContent=`✓ ${selected.length} produkt(er) registrert!`;
   setTimeout(()=>{msg.textContent='';msg.style.color='';window.closeModal('reg-modal');},2000);
