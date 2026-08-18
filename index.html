@@ -822,6 +822,7 @@ window.submitReg=async()=>{
   document.getElementById('split-pct').value='50';
   msg.style.color='#34d399';
   msg.textContent=`✓ ${selected.length} produkt(er) registrert!`;
+  loadData();loadCorrections();loadRegistrations();
   setTimeout(()=>{msg.textContent='';msg.style.color='';window.closeModal('reg-modal');},2000);
 };
 
@@ -880,6 +881,7 @@ window.addData=async()=>{
 
   document.getElementById('paste-area').value='';
   msg.textContent='✓ '+rows.length+' rader lastet opp!';
+  loadData();loadCorrections();loadRegistrations();
   setTimeout(()=>{msg.textContent='';window.closeModal('add-modal');},2000);
 };
 window.resetData=async()=>{
@@ -889,6 +891,7 @@ window.resetData=async()=>{
   await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
   await sb.from('registrations').delete().neq('id','00000000-0000-0000-0000-000000000000');
   msg.textContent='✓ Slettet fra begge tabeller.';
+  loadData();loadCorrections();loadRegistrations();
   setTimeout(()=>{msg.textContent='';},2000);
 };
 
@@ -955,6 +958,7 @@ window.saveEdit=async()=>{
   else{({error}=await sb.from('corrections').insert({consultant:sk,month_key:lm,salg_override,omset_override}));}
   if(error){msg.textContent='Feil: '+error.message;return;}
   msg.textContent='✓ Lagret!';
+  loadData();loadCorrections();
   setTimeout(()=>{window.closeModal('edit-modal');},1200);
 };
 window.clearEdit=async()=>{
@@ -1064,6 +1068,7 @@ window.deleteReg=async(id)=>{
       .limit(1);
   }
   document.getElementById('admin-msg').textContent='✓ Linje slettet.';
+  loadData();loadRegistrations();
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
 window.updateConsTeam=async(id,team_name)=>{
@@ -1189,7 +1194,7 @@ async function init(){
   await loadConsultants();
   await Promise.all([loadData(),loadCorrections(),loadAnn(),loadRegistrations()]);
   tick();setInterval(tick,30000);
-  setInterval(()=>{loadData();loadCorrections();loadAnn();},10000);
+  setInterval(()=>{loadData();loadCorrections();loadAnn();},5000);
 }
 init();
 </script>
