@@ -258,8 +258,10 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       </div>
       <div class="fld">
         <span class="lbl">Ordrenummer</span>
-        <input class="inp" id="reg-order" type="text" placeholder="F.eks. 4489236 eller Case-04489236">
-        <span class="hint">Fiber/TBB: 7 siffer eller Case-0xxxxxxx (f.eks. 7656754 eller Case-07656754) · NS/PORT: B + 7 siffer (f.eks. B1039487)</span>
+        <div id="order-inputs">
+          <input class="inp" id="reg-order-0" type="text" placeholder="F.eks. 7656754 eller Case-07656754" style="margin-bottom:6px">
+        </div>
+        <span class="hint">Fiber/TBB: 7 siffer eller Case-0xxxxxxx · NS/PORT: B + 7 siffer (f.eks. B1039487) · Maks 1 Fiber per ordrenummer</span>
       </div>
     </div>
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
@@ -512,7 +514,30 @@ document.getElementById('prod-grid').innerHTML=PRODUCTS.map((p,i)=>`
 
 window.toggleProd=i=>{
   document.getElementById(`plbl-${i}`).classList.toggle('sel-p',document.getElementById(`prod-${i}`).checked);
+  if(document.getElementById('split-toggle').checked) updateSplitPreview();
+  updateOrderInputs();
 };
+
+function updateOrderInputs(){
+  const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
+  const fiberCount=selected.filter(p=>isF(p.name)).length;
+  const needed=Math.max(fiberCount,1);
+  const container=document.getElementById('order-inputs');
+  const current=container.querySelectorAll('input').length;
+  if(needed>current){
+    for(let i=current;i<needed;i++){
+      const inp=document.createElement('input');
+      inp.className='inp';inp.id=`reg-order-${i}`;
+      inp.placeholder=`Ordrenummer for Fiber ${i+1}`;
+      inp.style.marginBottom='6px';
+      container.appendChild(inp);
+    }
+  } else if(needed<current){
+    const inputs=container.querySelectorAll('input');
+    for(let i=needed;i<inputs.length;i++) inputs[i].remove();
+    if(needed===1) container.querySelector('input').placeholder='F.eks. 7656754 eller Case-07656754';
+  }
+}
 
 function populateRegSelect(){
   const sel=document.getElementById('reg-name');
@@ -552,33 +577,44 @@ window.updateSplitPreview=()=>{
 
 window.submitReg=async()=>{
   const name=document.getElementById('reg-name').value;
-  const orderRaw=document.getElementById('reg-order').value.trim().toUpperCase();
   const msg=document.getElementById('reg-msg');
   if(!name){msg.textContent='Velg navn.';return;}
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
-  // Sjekk om valgte produkter er NS/PORT eller FIBER/TBB
   const hasNSorPORT=selected.some(p=>p.name.startsWith('NS ')||p.name.startsWith('PORT '));
   const hasFiberTBB=selected.some(p=>!p.name.startsWith('NS ')&&!p.name.startsWith('PORT '));
+  if(hasNSorPORT&&hasFiberTBB){msg.textContent='Du kan ikke blande NS/PORT med FIBER/TBB i samme registrering.';return;}
 
-  if(hasNSorPORT&&hasFiberTBB){
-    msg.textContent='Du kan ikke blande NS/PORT-produkter med FIBER/TBB i samme registrering — de bruker ulike ordrenummerformat.';return;
+  // Les alle ordrenumre
+  const orderInputs=document.getElementById('order-inputs').querySelectorAll('input');
+  const orders=[];
+  for(let i=0;i<orderInputs.length;i++){
+    const raw=orderInputs[i].value.trim().toUpperCase();
+    let order='';
+    if(hasNSorPORT){
+      const bMatch=raw.match(/B(\d{7})$/);
+      if(!bMatch){msg.textContent='NS/PORT krever B + 7 siffer (f.eks. B1039487).';return;}
+      order='B'+bMatch[1];
+    } else {
+      const digits=raw.replace(/\D/g,'');
+      const last7=digits.slice(-7);
+      if(!last7||last7.length!==7){msg.textContent=`Ordrenummer ${i+1} er ugyldig — må være 7 siffer.`;return;}
+      order=last7;
+    }
+    orders.push(order);
   }
 
-  let order='';
-  if(hasNSorPORT){
-    // Krever B + 7 siffer
-    const bMatch=orderRaw.match(/B(\d{7})$/);
-    if(!bMatch){msg.textContent='NS/PORT-produkter krever ordrenummer på formatet B1xxxxxx (f.eks. B1039487).';return;}
-    order='B'+bMatch[1];
-  } else {
-    // Krever 7 siffer — tar de siste 7 sifrene fra f.eks. Case-07656754
-    const digits=orderRaw.replace(/\D/g,'');
-    const last7=digits.slice(-7);
-    if(!last7||last7.length!==7){msg.textContent='Fiber/TBB-produkter krever 7-sifret ordrenummer (f.eks. 7656754 eller Case-07656754).';return;}
-    order=last7;
+  // Tilordne ordrenumre: ett per Fiber-produkt, resten bruker første
+  const fiberProducts=selected.filter(p=>isF(p.name));
+  const otherProducts=selected.filter(p=>!isF(p.name));
+  if(fiberProducts.length!==orders.length&&orders.length>1){
+    msg.textContent='Antall ordrenumre stemmer ikke med antall Fiber-produkter.';return;
   }
+  // Map hvert produkt til riktig ordrenummer
+  const productOrderMap=new Map();
+  fiberProducts.forEach((p,i)=>productOrderMap.set(p,orders[i]||orders[0]));
+  otherProducts.forEach(p=>productOrderMap.set(p,orders[0]));
 
   const cons=consultants.find(c=>c.name===name);
   if(!cons){msg.textContent='Fant ikke konsulenten.';return;}
@@ -610,23 +646,20 @@ window.submitReg=async()=>{
   const salesRows=[];
 
   selected.forEach(p=>{
+    const pOrder=productOrderMap.get(p)||orders[0];
     const myVal=isSplit?Math.round(p.cpo*myPct/100):p.cpo;
     const otherVal=isSplit?(p.cpo-myVal):0;
 
-    // Hovedselger
     regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
       month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-      order_number:order,nettbutikk:'0',quantity:1,product:p.name,
-      cpo:myVal});
+      order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:myVal});
     salesRows.push({consultant:cons.name.split(' ')[0],date_of_sale:today,
       week:String(weekNum),value:myVal,product:p.name});
 
-    // Medselger hvis splitt
     if(isSplit&&splitCons){
       regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
         month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-        order_number:order,nettbutikk:'0',quantity:1,product:p.name,
-        cpo:otherVal});
+        order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:otherVal});
       salesRows.push({consultant:splitCons.name.split(' ')[0],date_of_sale:today,
         week:String(weekNum),value:otherVal,product:p.name});
     }
@@ -637,12 +670,12 @@ window.submitReg=async()=>{
   const {error:salesErr}=await sb.from('sales').insert(salesRows);
   if(salesErr){msg.textContent='Feil ved oppdatering av dashboard: '+salesErr.message;return;}
 
-  // Reset form
   PRODUCTS.forEach((_,i)=>{
     document.getElementById(`prod-${i}`).checked=false;
     document.getElementById(`plbl-${i}`).classList.remove('sel-p');
   });
-  document.getElementById('reg-order').value='';
+  const container=document.getElementById('order-inputs');
+  container.innerHTML='<input class="inp" id="reg-order-0" type="text" placeholder="F.eks. 7656754 eller Case-07656754" style="margin-bottom:6px">';
   document.getElementById('split-toggle').checked=false;
   document.getElementById('split-section').style.display='none';
   document.getElementById('split-name').value='';
