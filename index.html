@@ -138,7 +138,11 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .ei:focus{outline:none;border-color:rgba(99,102,241,.5)}
 .ei.ov2{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)}
 .egrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.comment-inp{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:11px;padding:2px 4px;width:100%;font-family:'Inter',sans-serif;outline:none;}
+.status-btn{border:none;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.status-godkjent{background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.35)}
+.status-avventer{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.status-kansellert{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.status-select{background:#0d1320;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;font-family:'Inter',sans-serif;cursor:pointer}
 .comment-inp:focus{border-bottom-color:rgba(99,102,241,.6);color:#fff;}
 .comment-inp::placeholder{color:rgba(255,255,255,.2)}
 .al{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
@@ -238,7 +242,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     <div style="overflow-x:auto;max-height:65vh;overflow-y:auto">
       <table class="admin-table" id="my-sales-table">
         <thead><tr>
-          <th>Dato</th><th>Måned</th><th>Uke</th><th>Ordrenr.</th><th>Antall</th><th>Produkt</th><th>CPO</th><th>Kommentar</th>
+          <th>Status</th><th>Dato</th><th>Måned</th><th>Uke</th><th>Ordrenr.</th><th>Antall</th><th>Produkt</th><th>CPO</th><th>Kommentar</th>
         </tr></thead>
         <tbody id="my-sales-tbody"></tbody>
       </table>
@@ -290,6 +294,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     <div class="lbl" style="margin-bottom:8px">Velg produkt(er)</div>
     <div class="prod-grid" id="prod-grid"></div>
     <div id="lead-price-section" style="display:none"></div>
+    <div id="tbb-binding-section" style="display:none;margin-bottom:14px"></div>
 
     <!-- Splitt salg -->
     <div style="margin-bottom:14px">
@@ -366,6 +371,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
         <table class="admin-table" id="admin-table">
           <thead><tr>
             <th></th>
+            <th>Status</th>
             <th>Konsulent</th><th>ep-bruker</th><th>Dato solgt</th><th>Måned</th><th>Uke</th><th>Team</th><th>Ordrenr.</th><th>Nettbutikk</th><th>Antall</th><th>Produkt</th><th>CPO</th>
           </tr></thead>
           <tbody id="admin-tbody"></tbody>
@@ -405,9 +411,13 @@ const sb = createClient(
 const PRODUCTS=[
   {name:'FIBER 20',cpo:5000},{name:'FIBER 60',cpo:7000},{name:'FIBER 100',cpo:9000},
   {name:'FIBER 200',cpo:12000},{name:'FIBER 400',cpo:12000},{name:'FIBER 600',cpo:12000},
-  {name:'FIBER 1GB',cpo:12000},{name:'TBB 20',cpo:3000},{name:'TBB 40',cpo:3000},
-  {name:'TBB 60',cpo:3000},{name:'TBB 100',cpo:3000},{name:'TBB 200',cpo:4500},
-  {name:'TBB 400',cpo:4500},{name:'WIFI CONNECT AKS',cpo:250},
+  {name:'FIBER 1GB',cpo:12000},
+  {name:'TBB 20',cpo:3000,tbb:true,tbbHigh:false},
+  {name:'TBB 40',cpo:3000,tbb:true,tbbHigh:false},
+  {name:'TBB 60',cpo:3000,tbb:true,tbbHigh:false},
+  {name:'TBB 100',cpo:3000,tbb:true,tbbHigh:false},
+  {name:'TBB 200',cpo:4500,tbb:true,tbbHigh:true},
+  {name:'TBB 400',cpo:4500,tbb:true,tbbHigh:true},
   {name:'SAFEZONE INTERNETT',cpo:250},{name:'LEAD WIFI CONNECT',cpo:700},
   {name:'WIFI CONNECT INNE',cpo:750},{name:'5G Reserve',cpo:400},
   {name:'NS BASIS',cpo:650},{name:'NS BASIS TALE',cpo:900},{name:'NS BASIS DATA',cpo:900},
@@ -571,9 +581,38 @@ window.toggleProd=i=>{
   }
 
   // Vis/skjul lead-pris-felt
+  updateTbbBinding();
   updateLeadPriceFields();
   if(document.getElementById('split-toggle').checked) updateSplitPreview();
   updateOrderInputs();
+};
+
+function updateTbbBinding(){
+  const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
+  const tbbSelected=selected.filter(p=>p.tbb);
+  const section=document.getElementById('tbb-binding-section');
+  if(!section)return;
+  if(tbbSelected.length===0){section.style.display='none';section.innerHTML='';return;}
+  section.style.display='block';
+  section.innerHTML=`<div style="background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:9px;padding:12px 14px">
+    <div class="lbl" style="margin-bottom:10px"><i class="ti ti-clock"></i> Binding</div>
+    ${tbbSelected.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <span style="font-size:11px;color:rgba(255,255,255,.4);min-width:80px">${p.name}</span>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="radio" name="tbb-binding-${i}" id="tbb-bind-yes-${i}" value="binding" onchange="updateTbbCpo()" checked style="accent-color:#6366f1">
+          <span style="font-size:11px;color:#f1f5f9">Med binding <span style="color:rgba(255,255,255,.35)">(${new Intl.NumberFormat('nb-NO').format(p.tbbHigh?4500:3000)} kr)</span></span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="radio" name="tbb-binding-${i}" id="tbb-bind-no-${i}" value="ingen" onchange="updateTbbCpo()" style="accent-color:#6366f1">
+          <span style="font-size:11px;color:#f1f5f9">Uten binding <span style="color:rgba(255,255,255,.35)">(2 000 kr)</span></span>
+        </label>
+      </div>`).join('')}
+  </div>`;
+}
+
+window.updateTbbCpo=()=>{
+  if(document.getElementById('split-toggle').checked) updateSplitPreview();
 };
 
 function updateLeadPriceFields(){
@@ -760,7 +799,13 @@ window.submitReg=async()=>{
   const selected=PRODUCTS.filter((_,i)=>document.getElementById(`prod-${i}`).checked);
   if(!selected.length){msg.textContent='Velg minst ett produkt.';return;}
 
-  // For lead-produkter: beregn riktig beløp
+  // For TBB: beregn CPO basert på binding-valg
+  const tbbSelected=selected.filter(p=>p.tbb);
+  tbbSelected.forEach((p,i)=>{
+    const bindEl=document.getElementById(`tbb-bind-yes-${i}`);
+    const hasBinding=bindEl?bindEl.checked:true;
+    p._cpo=hasBinding?(p.tbbHigh?4500:3000):2000;
+  });
   const leadSelected=selected.filter(p=>isLead(p));
   leadSelected.forEach((p,i)=>{
     if(p.name==='WIFI CONNECT AKS'){
@@ -961,6 +1006,8 @@ window.submitReg=async()=>{
   container.innerHTML='<input class="inp" id="reg-order-0" type="text" placeholder="Ordrenummer" style="margin-bottom:6px">';
   const addonSec=document.getElementById('addon-order-section');
   if(addonSec){addonSec.style.display='none';addonSec.innerHTML='';}
+  const tbbSec=document.getElementById('tbb-binding-section');
+  if(tbbSec){tbbSec.style.display='none';tbbSec.innerHTML='';}
   const leadSec=document.getElementById('lead-price-section');
   if(leadSec){leadSec.style.display='none';leadSec.innerHTML='';}
   document.getElementById('split-toggle').checked=false;
@@ -1076,7 +1123,7 @@ window.openMySales=async(sk)=>{
   if(!cons){return;}
   const displayN=getDisplayName(cons.name);
   document.getElementById('my-sales-title').innerHTML=`<i class="ti ti-list"></i> ${displayN} — Mine salg`;
-  document.getElementById('my-sales-tbody').innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Laster...</td></tr>';
+  document.getElementById('my-sales-tbody').innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Laster...</td></tr>';
   window.openM('my-sales-modal');
 
   // Hent alltid ferske data direkte fra Supabase
@@ -1098,7 +1145,10 @@ window.openMySales=async(sk)=>{
     `<span style="color:#fbbf24;font-weight:700">${kr(totalCpo)}</span> total CPO &nbsp;•&nbsp; `+
     `<span style="color:rgba(255,255,255,.4)">${myRows.length} linjer</span>`;
 
-  document.getElementById('my-sales-tbody').innerHTML=myRows.map(r=>`<tr>
+  document.getElementById('my-sales-tbody').innerHTML=myRows.map(r=>{
+    const sb2=statusBadge(r.status);
+    return`<tr style="border-left:3px solid ${r.status==='godkjent'?'#34d399':r.status==='kansellert'?'#f87171':'#fbbf24'}">
+    <td><span class="status-btn ${sb2.cls}">${sb2.lbl}</span></td>
     <td>${r.date_sold}</td>
     <td>${r.month_name}</td>
     <td>${r.week_number}</td>
@@ -1107,9 +1157,34 @@ window.openMySales=async(sk)=>{
     <td>${r.product}</td>
     <td style="color:${isF(r.product)?'#34d399':'rgba(255,255,255,.7)'};font-weight:600">${new Intl.NumberFormat('nb-NO').format(r.cpo)} kr</td>
     <td><input class="comment-inp" value="${r.comment||''}" placeholder="Legg til kommentar..." onblur="saveComment('${r.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"></td>
-  </tr>`).join('');
+  </tr>`;}).join('');
 
   window.openM('my-sales-modal');
+};
+
+function statusBadge(status){
+  const s=status||'avventer';
+  const map={godkjent:{cls:'status-godkjent',lbl:'✓ Godkjent'},avventer:{cls:'status-avventer',lbl:'⏳ Avventer'},kansellert:{cls:'status-kansellert',lbl:'✕ Kansellert'}};
+  return map[s]||map['avventer'];
+}
+
+function statusSelect(id,current){
+  const s=current||'avventer';
+  return`<select class="status-select" onchange="saveStatus('${id}',this.value)" style="background:${s==='godkjent'?'rgba(16,185,129,.15)':s==='kansellert'?'rgba(239,68,68,.15)':'rgba(245,158,11,.15)'}">
+    <option value="avventer" ${s==='avventer'?'selected':''}>⏳ Avventer</option>
+    <option value="godkjent" ${s==='godkjent'?'selected':''}>✓ Godkjent</option>
+    <option value="kansellert" ${s==='kansellert'?'selected':''}>✕ Kansellert</option>
+  </select>`;
+}
+
+window.saveStatus=async(id,status)=>{
+  const {error}=await sb.from('registrations').update({status}).eq('id',id);
+  if(error){alert('Feil: '+error.message);return;}
+  // Oppdater lokalt
+  const local=registrations.find(r=>r.id===id);
+  if(local) local.status=status;
+  document.getElementById('admin-msg').textContent='✓ Status oppdatert';
+  setTimeout(()=>{document.getElementById('admin-msg').textContent='';},1200);
 };
 
 window.saveComment=async(id,comment,rowEl)=>{
@@ -1234,6 +1309,7 @@ function renderAdminTable(){
   }
   tbody.innerHTML=rows.map(r=>`<tr>
     <td><button onclick="deleteReg('${r.id}')" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif"><i class="ti ti-trash"></i></button></td>
+    <td>${statusSelect(r.id,r.status)}</td>
     <td>${r.consultant}</td><td>${r.ep_user}</td><td>${r.date_sold}</td>
     <td>${r.month_name}</td><td>${r.week_number}</td><td>${r.team}</td>
     <td>${r.order_number}</td><td>${r.nettbutikk||'0'}</td><td>${r.quantity||1}</td>
