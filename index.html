@@ -358,6 +358,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <button class="mbtn mb-blue" onclick="showAdminTab('log')" id="tab-log">Salgslogg</button>
       <button class="mbtn mb-cancel" onclick="showAdminTab('cons')" id="tab-cons">Konsulenter</button>
+      <button class="mbtn mb-cancel" onclick="showAdminTab('uke')" id="tab-uke">Ukesstatistikk</button>
       <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Excel</button>
     </div>
     <div id="team-filter-row" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
@@ -399,6 +400,20 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       </div>
       <button class="mbtn mb-green" onclick="addConsultant()" style="margin-bottom:16px"><i class="ti ti-plus"></i> Legg til</button>
       <div id="cons-list"></div>
+    </div>
+
+    <div id="admin-uke-section" style="display:none">
+      <div style="overflow-x:auto;max-height:60vh;overflow-y:auto">
+        <table class="admin-table" id="uke-table">
+          <thead><tr>
+            <th>Uke</th>
+            <th style="color:#34d399">Fiber-salg</th>
+            <th style="color:#a5b4fc">Wifi Connect Inne</th>
+            <th style="color:#fbbf24">TBB-salg</th>
+          </tr></thead>
+          <tbody id="uke-tbody"></tbody>
+        </table>
+      </div>
     </div>
     <div class="mbtns" style="margin-top:14px">
       <button class="mbtn mb-cancel" onclick="closeModal('admin-modal')">Lukk</button>
@@ -1329,11 +1344,50 @@ window.checkAdmin=()=>{
 window.showAdminTab=(tab)=>{
   document.getElementById('admin-log-section').style.display=tab==='log'?'block':'none';
   document.getElementById('admin-cons-section').style.display=tab==='cons'?'block':'none';
+  document.getElementById('admin-uke-section').style.display=tab==='uke'?'block':'none';
   document.getElementById('copy-log-btn').style.display=tab==='log'?'inline-flex':'none';
   document.getElementById('team-filter-row').style.display=tab==='log'?'flex':'none';
   document.getElementById('tab-log').className='mbtn '+(tab==='log'?'mb-blue':'mb-cancel');
   document.getElementById('tab-cons').className='mbtn '+(tab==='cons'?'mb-blue':'mb-cancel');
+  document.getElementById('tab-uke').className='mbtn '+(tab==='uke'?'mb-blue':'mb-cancel');
+  if(tab==='uke') renderUkeStats();
 };
+
+function renderUkeStats(){
+  const tbody=document.getElementById('uke-tbody');
+  if(!tbody)return;
+
+  // Grupper etter ukenummer — ekskluder kansellerte
+  const aktive=registrations.filter(r=>(r.status||'avventer')!=='kansellert');
+
+  const uker={};
+  aktive.forEach(r=>{
+    const uke=r.week_number;
+    if(!uke)return;
+    if(!uker[uke])uker[uke]={fiber:0,wifi:0,tbb:0};
+    const p=(r.product||'').toUpperCase();
+    if(p.includes('FIBER')) uker[uke].fiber++;
+    else if(p.includes('WIFI CONNECT INNE')) uker[uke].wifi++;
+    else if(p.startsWith('TBB')) uker[uke].tbb++;
+  });
+
+  const sorted=Object.keys(uker).map(Number).sort((a,b)=>a-b);
+
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Ingen data</td></tr>';return;}
+
+  tbody.innerHTML=sorted.map(uke=>`<tr>
+    <td style="font-weight:700">Uke ${uke}</td>
+    <td style="color:#34d399;font-weight:700;font-size:16px">${uker[uke].fiber}</td>
+    <td style="color:#a5b4fc;font-weight:700;font-size:16px">${uker[uke].wifi}</td>
+    <td style="color:#fbbf24;font-weight:700;font-size:16px">${uker[uke].tbb}</td>
+  </tr>`).join('')+
+  `<tr style="border-top:1px solid rgba(255,255,255,.15)">
+    <td style="font-weight:700;color:rgba(255,255,255,.5)">Totalt</td>
+    <td style="color:#34d399;font-weight:800;font-size:16px">${sorted.reduce((a,u)=>a+uker[u].fiber,0)}</td>
+    <td style="color:#a5b4fc;font-weight:800;font-size:16px">${sorted.reduce((a,u)=>a+uker[u].wifi,0)}</td>
+    <td style="color:#fbbf24;font-weight:800;font-size:16px">${sorted.reduce((a,u)=>a+uker[u].tbb,0)}</td>
+  </tr>`;
+}
 
 window.setStatusFilter=filter=>{
   activeStatusFilter=filter;
