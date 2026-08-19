@@ -143,7 +143,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .status-avventer{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
 .status-kansellert{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
 .status-select{background:#0d1320;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;font-family:'Inter',sans-serif;cursor:pointer}
-.comment-inp:focus{border-bottom-color:rgba(99,102,241,.6);color:#fff;}
+.comment-inp{background:transparent;border:none;color:rgba(255,255,255,.65);font-size:11px;padding:2px 4px;width:100%;font-family:'Inter',sans-serif;outline:none;}
+.comment-inp:focus{color:#fff;border-bottom:1px solid rgba(99,102,241,.5);}
 .comment-inp::placeholder{color:rgba(255,255,255,.2)}
 .al{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
 .ai{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;font-weight:600;padding:9px 12px;font-family:'Inter',sans-serif;width:100%}
@@ -359,11 +360,16 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <button class="mbtn mb-cancel" onclick="showAdminTab('cons')" id="tab-cons">Konsulenter</button>
       <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Excel</button>
     </div>
-    <div id="team-filter-row" style="display:flex;gap:8px;margin-bottom:12px">
-      <button class="mbtn mb-blue" id="tf-total" onclick="setTeamFilter('Total')">Total</button>
+    <div id="team-filter-row" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="mbtn mb-blue" id="tf-total" onclick="setTeamFilter('Total')">Alle team</button>
       <button class="mbtn mb-cancel" id="tf-team1" onclick="setTeamFilter('Team 1')">Team 1</button>
       <button class="mbtn mb-cancel" id="tf-team2" onclick="setTeamFilter('Team 2')">Team 2</button>
       <button class="mbtn mb-cancel" id="tf-team3" onclick="setTeamFilter('Team 3')">Team 3</button>
+      <div style="width:1px;background:rgba(255,255,255,.1);margin:0 4px"></div>
+      <button class="mbtn mb-blue" id="sf-alle" onclick="setStatusFilter('alle')">Alle statuser</button>
+      <button class="mbtn mb-cancel" id="sf-avventer" onclick="setStatusFilter('avventer')" style="color:#fbbf24;border-color:rgba(245,158,11,.3)">⏳ Avventer</button>
+      <button class="mbtn mb-cancel" id="sf-godkjent" onclick="setStatusFilter('godkjent')" style="color:#34d399;border-color:rgba(16,185,129,.3)">✓ Godkjent</button>
+      <button class="mbtn mb-cancel" id="sf-kansellert" onclick="setStatusFilter('kansellert')" style="color:#f87171;border-color:rgba(239,68,68,.3)">✕ Kansellert</button>
     </div>
     </div>
     <div id="admin-log-section">
@@ -440,7 +446,7 @@ const SMAL=8,OMAL=80000;
 const MONTHS=['','Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
 
 let allRows=[],corrections=[],activeAnn=null,consultants=[],registrations=[];
-let currentSeller=null,currentMK=null,activeTeamFilter='Total';
+let currentSeller=null,currentMK=null,activeTeamFilter='Total',activeStatusFilter='alle';
 
 const gac=n=>{let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%AC.length;return AC[h];};
 const ini=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
@@ -485,7 +491,7 @@ const getKey=n=>{
 
 window.openM=id=>document.getElementById(id).classList.add('open');
 window.closeModal=id=>document.getElementById(id).classList.remove('open');
-['ann-modal','add-modal','edit-modal','reg-modal','admin-pw-modal','admin-modal'].forEach(id=>{
+['ann-modal','add-modal','edit-modal','reg-modal','admin-pw-modal','admin-modal','my-sales-modal'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('click',e=>{if(e.target===el)window.closeModal(id);});
 });
@@ -1178,13 +1184,45 @@ function statusSelect(id,current){
 }
 
 window.saveStatus=async(id,status)=>{
-  const {error}=await sb.from('registrations').update({status}).eq('id',id);
+  const reg=registrations.find(r=>r.id===id);
+  const msg=document.getElementById('admin-msg');
+
+  const originalCpo=reg?.original_cpo||reg?.cpo||0;
+  const newCpo=status==='kansellert'?0:originalCpo;
+
+  // Oppdater registrations
+  const update={status,cpo:newCpo};
+  if(status==='kansellert'&&!reg?.original_cpo){
+    update.original_cpo=reg?.cpo||0; // lagre original første gang
+  }
+
+  const {error}=await sb.from('registrations').update(update).eq('id',id);
   if(error){alert('Feil: '+error.message);return;}
-  // Oppdater lokalt
-  const local=registrations.find(r=>r.id===id);
-  if(local) local.status=status;
-  document.getElementById('admin-msg').textContent='✓ Status oppdatert';
-  setTimeout(()=>{document.getElementById('admin-msg').textContent='';},1200);
+
+  // Oppdater sales-tabellen
+  if(reg){
+    const oldCpo=reg.cpo;
+    if(status==='kansellert'){
+      await sb.from('sales').update({value:0})
+        .eq('consultant',reg.consultant.split(' ')[0])
+        .eq('date_of_sale',reg.date_sold)
+        .eq('product',reg.product)
+        .eq('value',oldCpo);
+    } else if(originalCpo>0){
+      await sb.from('sales').update({value:originalCpo})
+        .eq('consultant',reg.consultant.split(' ')[0])
+        .eq('date_of_sale',reg.date_sold)
+        .eq('product',reg.product)
+        .eq('value',0);
+    }
+    reg.cpo=newCpo;
+    if(!reg.original_cpo) reg.original_cpo=oldCpo;
+    reg.status=status;
+  }
+
+  loadData();loadRegistrations();
+  msg.textContent='✓ Status oppdatert';
+  setTimeout(()=>{msg.textContent='';},1200);
 };
 
 window.saveComment=async(id,comment,rowEl)=>{
@@ -1289,7 +1327,21 @@ window.showAdminTab=(tab)=>{
   document.getElementById('tab-cons').className='mbtn '+(tab==='cons'?'mb-blue':'mb-cancel');
 };
 
-window.setTeamFilter=filter=>{
+window.setStatusFilter=filter=>{
+  activeStatusFilter=filter;
+  ['alle','avventer','godkjent','kansellert'].forEach(s=>{
+    const el=document.getElementById(`sf-${s}`);
+    if(el) el.className='mbtn '+(s===filter?'mb-blue':'mb-cancel');
+    // Behold fargen på status-knappene
+    if(el&&s!=='alle'&&s!==filter){
+      const colors={avventer:'color:#fbbf24;border-color:rgba(245,158,11,.3)',godkjent:'color:#34d399;border-color:rgba(16,185,129,.3)',kansellert:'color:#f87171;border-color:rgba(239,68,68,.3)'};
+      el.style.cssText=colors[s]||'';
+    } else if(el&&s!=='alle'){
+      el.style.cssText='';
+    }
+  });
+  renderAdminTable();
+};
   activeTeamFilter=filter;
   ['Total','Team 1','Team 2','Team 3'].forEach(t=>{
     const id='tf-'+t.toLowerCase().replace(' ','');
@@ -1306,6 +1358,9 @@ function renderAdminTable(){
   if(activeTeamFilter!=='Total'){
     const teamMembers=consultants.filter(c=>c.team_name===activeTeamFilter).map(c=>c.name.toLowerCase());
     rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
+  }
+  if(activeStatusFilter!=='alle'){
+    rows=rows.filter(r=>(r.status||'avventer')===activeStatusFilter);
   }
   tbody.innerHTML=rows.map(r=>`<tr>
     <td><button onclick="deleteReg('${r.id}')" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif"><i class="ti ti-trash"></i></button></td>
