@@ -1117,6 +1117,7 @@ window.saveComment=async(id,comment)=>{
     setTimeout(()=>{msg.textContent='';},1500);
   }
 };
+window.openEditModal=sk=>{
   window.requireAdmin(()=>{
   currentSeller=sk;
   const mRows=allRows.filter(r=>getKey(r.name)===sk&&gmk(r.dateStr)===currentMK);
