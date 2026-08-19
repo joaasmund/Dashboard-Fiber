@@ -1342,6 +1342,8 @@ window.setStatusFilter=filter=>{
   });
   renderAdminTable();
 };
+
+window.setTeamFilter=filter=>{
   activeTeamFilter=filter;
   ['Total','Team 1','Team 2','Team 3'].forEach(t=>{
     const id='tf-'+t.toLowerCase().replace(' ','');
