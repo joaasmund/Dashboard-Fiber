@@ -1076,16 +1076,19 @@ window.openMySales=async(sk)=>{
   if(!cons){return;}
   const displayN=getDisplayName(cons.name);
   document.getElementById('my-sales-title').innerHTML=`<i class="ti ti-list"></i> ${displayN} — Mine salg`;
+  document.getElementById('my-sales-tbody').innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Laster...</td></tr>';
+  window.openM('my-sales-modal');
 
-  // Hent fra registrations
-  const {data,error}=await sb.from('registrations')
+  // Hent alltid ferske data direkte fra Supabase
+  const {data}=await sb.from('registrations')
     .select('*')
-    .or(`consultant.ilike.${cons.name},consultant.ilike.${cons.name.split(' ')[0]}`)
     .order('date_sold',{ascending:true});
 
-  const rows=data||[];
-  // Filtrer til riktig konsulent
-  const myRows=rows.filter(r=>r.consultant.toLowerCase().includes(cons.name.split(' ')[0].toLowerCase()));
+  const firstName=cons.name.split(' ')[0].toLowerCase();
+  const myRows=(data||[]).filter(r=>
+    r.consultant.toLowerCase()===cons.name.toLowerCase()||
+    r.consultant.split(' ')[0].toLowerCase()===firstName
+  );
 
   // Summer
   const totalCpo=myRows.reduce((a,r)=>a+(r.cpo||0),0);
@@ -1109,12 +1112,18 @@ window.openMySales=async(sk)=>{
   window.openM('my-sales-modal');
 };
 
-window.saveComment=async(id,comment)=>{
+window.saveComment=async(id,comment,rowEl)=>{
   const {error}=await sb.from('registrations').update({comment:comment||null}).eq('id',id);
-  if(!error){
-    const msg=document.getElementById('my-sales-msg');
-    msg.textContent='✓ Kommentar lagret';
-    setTimeout(()=>{msg.textContent='';},1500);
+  const msg=document.getElementById('my-sales-msg');
+  if(error){
+    msg.textContent='Feil: kunne ikke lagre.';
+    setTimeout(()=>{msg.textContent='';},2000);
+  } else {
+    msg.textContent='✓ Lagret';
+    setTimeout(()=>{msg.textContent='';},1200);
+    // Oppdater lokalt i registrations-arrayen så det ikke forsvinner ved neste åpning
+    const local=registrations.find(r=>r.id===id);
+    if(local) local.comment=comment||null;
   }
 };
 window.openEditModal=sk=>{
