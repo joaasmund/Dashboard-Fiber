@@ -534,10 +534,18 @@ async function loadConsultants(){
   renderConsList();
 }
 async function loadData(){
-  const {data,error}=await sb.from('sales').select('*');
+  const {data,error}=await sb.from('registrations').select('*');
   if(error){setSync(false);return;}
   setSync(true);
-  allRows=(data||[]).map(r=>({name:r.consultant,dateStr:r.date_of_sale,value:r.value,product:r.product}));
+  // Ekskluder kansellerte fra dashboardvisning
+  allRows=(data||[])
+    .filter(r=>(r.status||'avventer')!=='kansellert')
+    .map(r=>({
+      name:r.consultant.split(' ')[0],
+      dateStr:r.date_sold,
+      value:r.cpo||0,
+      product:r.product
+    }));
   document.getElementById('row-count').textContent=allRows.length+' rader i DB';
   render();
 }
@@ -548,7 +556,17 @@ async function loadCorrections(){
 async function loadRegistrations(){
   const {data}=await sb.from('registrations').select('*').order('date_sold',{ascending:false});
   registrations=data||[];
+  // Oppdater dashboard fra samme data
+  allRows=registrations
+    .filter(r=>(r.status||'avventer')!=='kansellert')
+    .map(r=>({
+      name:r.consultant.split(' ')[0],
+      dateStr:r.date_sold,
+      value:r.cpo||0,
+      product:r.product
+    }));
   renderAdminTable();
+  render();
 }
 async function loadAnn(){
   const {data}=await sb.from('announcements').select('*').order('created_at',{ascending:false}).limit(1);
@@ -564,10 +582,9 @@ async function loadAnn(){
   }
 }
 
-sb.channel('s1').on('postgres_changes',{event:'*',schema:'public',table:'sales'},loadData).subscribe(s=>setSync(s==='SUBSCRIBED'));
+sb.channel('s1').on('postgres_changes',{event:'*',schema:'public',table:'registrations'},()=>{loadRegistrations();}).subscribe(s=>setSync(s==='SUBSCRIBED'));
 sb.channel('s2').on('postgres_changes',{event:'*',schema:'public',table:'corrections'},loadCorrections).subscribe();
 sb.channel('s3').on('postgres_changes',{event:'*',schema:'public',table:'announcements'},loadAnn).subscribe();
-sb.channel('s4').on('postgres_changes',{event:'*',schema:'public',table:'registrations'},loadRegistrations).subscribe();
 sb.channel('s5').on('postgres_changes',{event:'*',schema:'public',table:'consultants'},loadConsultants).subscribe();
 
 const LEAD_PRODUCTS=['WIFI CONNECT AKS','LEAD WIFI CONNECT'];
@@ -1037,7 +1054,7 @@ window.submitReg=async()=>{
   document.getElementById('split-pct').value='50';
   msg.style.color='#34d399';
   msg.textContent=`✓ ${selected.length} produkt(er) registrert!`;
-  loadData();loadCorrections();loadRegistrations();
+  loadRegistrations();loadCorrections();
   setTimeout(()=>{msg.textContent='';msg.style.color='';window.closeModal('reg-modal');},2000);
 };
 
@@ -1096,7 +1113,7 @@ window.addData=async()=>{
 
   document.getElementById('paste-area').value='';
   msg.textContent='✓ '+rows.length+' rader lastet opp!';
-  loadData();loadCorrections();loadRegistrations();
+  loadRegistrations();loadCorrections();
   setTimeout(()=>{msg.textContent='';window.closeModal('add-modal');},2000);
 };
 window.resetData=async()=>{
@@ -1106,7 +1123,7 @@ window.resetData=async()=>{
   await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
   await sb.from('registrations').delete().neq('id','00000000-0000-0000-0000-000000000000');
   msg.textContent='✓ Slettet fra begge tabeller.';
-  loadData();loadCorrections();loadRegistrations();
+  loadRegistrations();loadCorrections();
   setTimeout(()=>{msg.textContent='';},2000);
 };
 
@@ -1243,7 +1260,7 @@ window.saveStatus=async(id,status)=>{
   reg.cpo=newCpo;
   if(status==='kansellert'&&!(reg.original_cpo>0)) reg.original_cpo=originalCpo;
 
-  loadData();loadRegistrations();
+  loadRegistrations();
   msg.textContent='✓ Status oppdatert';
   setTimeout(()=>{msg.textContent='';},1200);
 };
@@ -1298,7 +1315,7 @@ window.saveEdit=async()=>{
   else{({error}=await sb.from('corrections').insert({consultant:sk,month_key:lm,salg_override,omset_override}));}
   if(error){msg.textContent='Feil: '+error.message;return;}
   msg.textContent='✓ Lagret!';
-  loadData();loadCorrections();
+  loadRegistrations();loadCorrections();
   setTimeout(()=>{window.closeModal('edit-modal');},1200);
 };
 window.clearEdit=async()=>{
@@ -1483,7 +1500,7 @@ window.deleteReg=async(id)=>{
       .limit(1);
   }
   document.getElementById('admin-msg').textContent='✓ Linje slettet.';
-  loadData();loadRegistrations();
+  loadRegistrations();
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
 window.updateConsTeam=async(id,team_name)=>{
@@ -1610,9 +1627,9 @@ function tick(){
 
 async function init(){
   await loadConsultants();
-  await Promise.all([loadData(),loadCorrections(),loadAnn(),loadRegistrations()]);
+  await Promise.all([loadRegistrations(),loadCorrections(),loadAnn()]);
   tick();setInterval(tick,30000);
-  setInterval(()=>{loadData();loadCorrections();loadAnn();},5000);
+  setInterval(()=>{loadRegistrations();loadCorrections();loadAnn();},5000);
 }
 init();
 </script>
