@@ -1186,56 +1186,47 @@ function statusSelect(id,current){
 window.saveStatus=async(id,status)=>{
   const reg=registrations.find(r=>r.id===id);
   const msg=document.getElementById('admin-msg');
+  if(!reg){return;}
 
-  const originalCpo=reg?.original_cpo>0?reg.original_cpo:reg?.cpo||0;
+  const originalCpo=reg.original_cpo>0?reg.original_cpo:reg.cpo;
   const newCpo=status==='kansellert'?0:originalCpo;
 
-  // Oppdater registrations
+  // Lagre original_cpo første gang vi kansellerer
   const update={status,cpo:newCpo};
-  if(status==='kansellert'){
-    update.original_cpo=reg?.cpo>0?reg.cpo:(reg?.original_cpo>0?reg.original_cpo:0);
+  if(status==='kansellert'&&!(reg.original_cpo>0)){
+    update.original_cpo=reg.cpo;
   }
+
   const {error}=await sb.from('registrations').update(update).eq('id',id);
   if(error){alert('Feil: '+error.message);return;}
 
-  // Oppdater sales med fornavn + dato + produkt (ikke verdi som filter — kan variere)
-  if(reg){
-    const firstName=reg.consultant.split(' ')[0];
-    const oldCpo=reg.original_cpo||reg.cpo;
-
-    if(status==='kansellert'){
-      // Finn alle rader som matcher og sett til 0
-      const {data:salesRows}=await sb.from('sales')
-        .select('id,value')
-        .eq('consultant',firstName)
-        .eq('date_of_sale',reg.date_sold)
-        .eq('product',reg.product)
-        .gt('value',0);
-
-      if(salesRows&&salesRows.length>0){
-        // Ta den raden som er nærmest reg.cpo
-        const closest=salesRows.reduce((a,b)=>Math.abs(a.value-reg.cpo)<Math.abs(b.value-reg.cpo)?a:b);
-        await sb.from('sales').update({value:0}).eq('id',closest.id);
-      }
-      reg._originalCpo=reg.cpo;
-      reg.cpo=0;
-    } else if(originalCpo>0){
-      // Gjenopprett — finn rad med value=0 og sett tilbake
-      const {data:salesRows}=await sb.from('sales')
-        .select('id')
-        .eq('consultant',firstName)
-        .eq('date_of_sale',reg.date_sold)
-        .eq('product',reg.product)
-        .eq('value',0);
-
-      if(salesRows&&salesRows.length>0){
-        await sb.from('sales').update({value:originalCpo}).eq('id',salesRows[0].id);
-      }
-      reg.cpo=originalCpo;
+  // Oppdater sales — finn nærmeste match på fornavn + dato + produkt
+  const firstName=reg.consultant.split(' ')[0];
+  if(status==='kansellert'){
+    const {data:matches}=await sb.from('sales').select('id,value')
+      .eq('consultant',firstName)
+      .eq('date_of_sale',reg.date_sold)
+      .ilike('product',reg.product)
+      .gt('value',0);
+    if(matches&&matches.length>0){
+      const best=matches.reduce((a,b)=>Math.abs(a.value-(reg.original_cpo||reg.cpo))<Math.abs(b.value-(reg.original_cpo||reg.cpo))?a:b);
+      await sb.from('sales').update({value:0}).eq('id',best.id);
     }
-    reg.status=status;
-    if(!reg.original_cpo&&status==='kansellert') reg.original_cpo=reg._originalCpo;
+  } else {
+    const restoreVal=originalCpo;
+    const {data:matches}=await sb.from('sales').select('id')
+      .eq('consultant',firstName)
+      .eq('date_of_sale',reg.date_sold)
+      .ilike('product',reg.product)
+      .eq('value',0);
+    if(matches&&matches.length>0){
+      await sb.from('sales').update({value:restoreVal}).eq('id',matches[0].id);
+    }
   }
+
+  reg.status=status;
+  reg.cpo=newCpo;
+  if(status==='kansellert'&&!(reg.original_cpo>0)) reg.original_cpo=originalCpo;
 
   loadData();loadRegistrations();
   msg.textContent='✓ Status oppdatert';
