@@ -1193,31 +1193,48 @@ window.saveStatus=async(id,status)=>{
   // Oppdater registrations
   const update={status,cpo:newCpo};
   if(status==='kansellert'&&!reg?.original_cpo){
-    update.original_cpo=reg?.cpo||0; // lagre original første gang
+    update.original_cpo=reg?.cpo||0;
   }
-
   const {error}=await sb.from('registrations').update(update).eq('id',id);
   if(error){alert('Feil: '+error.message);return;}
 
-  // Oppdater sales-tabellen
+  // Oppdater sales med fornavn + dato + produkt (ikke verdi som filter — kan variere)
   if(reg){
-    const oldCpo=reg.cpo;
+    const firstName=reg.consultant.split(' ')[0];
+    const oldCpo=reg.original_cpo||reg.cpo;
+
     if(status==='kansellert'){
-      await sb.from('sales').update({value:0})
-        .eq('consultant',reg.consultant.split(' ')[0])
+      // Finn alle rader som matcher og sett til 0
+      const {data:salesRows}=await sb.from('sales')
+        .select('id,value')
+        .eq('consultant',firstName)
         .eq('date_of_sale',reg.date_sold)
         .eq('product',reg.product)
-        .eq('value',oldCpo);
+        .gt('value',0);
+
+      if(salesRows&&salesRows.length>0){
+        // Ta den raden som er nærmest reg.cpo
+        const closest=salesRows.reduce((a,b)=>Math.abs(a.value-reg.cpo)<Math.abs(b.value-reg.cpo)?a:b);
+        await sb.from('sales').update({value:0}).eq('id',closest.id);
+      }
+      reg._originalCpo=reg.cpo;
+      reg.cpo=0;
     } else if(originalCpo>0){
-      await sb.from('sales').update({value:originalCpo})
-        .eq('consultant',reg.consultant.split(' ')[0])
+      // Gjenopprett — finn rad med value=0 og sett tilbake
+      const {data:salesRows}=await sb.from('sales')
+        .select('id')
+        .eq('consultant',firstName)
         .eq('date_of_sale',reg.date_sold)
         .eq('product',reg.product)
         .eq('value',0);
+
+      if(salesRows&&salesRows.length>0){
+        await sb.from('sales').update({value:originalCpo}).eq('id',salesRows[0].id);
+      }
+      reg.cpo=originalCpo;
     }
-    reg.cpo=newCpo;
-    if(!reg.original_cpo) reg.original_cpo=oldCpo;
     reg.status=status;
+    if(!reg.original_cpo&&status==='kansellert') reg.original_cpo=reg._originalCpo;
   }
 
   loadData();loadRegistrations();
