@@ -1388,8 +1388,8 @@ window.copyLog=()=>{
     const teamMembers=consultants.filter(c=>c.team_name===activeTeamFilter).map(c=>c.name.toLowerCase());
     rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
   }
-  const header='Konsulent\tep-bruker\tDato solgt\tMåned\tUke\tTeam\tOrdrenr.\tNettbutikk\tAntall\tProdukt\tCPO';
-  const lines=rows.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo].join('\t'));
+  const header='Konsulent\tep-bruker\tDato solgt\tMåned\tUke\tTeam\tOrdrenr.\tNettbutikk\tAntall\tProdukt\tCPO\tStatus';
+  const lines=rows.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo,r.status||'avventer'].join('\t'));
   navigator.clipboard.writeText([header,...lines].join('\n'));
   document.getElementById('admin-msg').textContent='✓ Kopiert til utklippstavlen!';
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
