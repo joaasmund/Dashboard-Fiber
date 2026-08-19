@@ -138,7 +138,9 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 .ei:focus{outline:none;border-color:rgba(99,102,241,.5)}
 .ei.ov2{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)}
 .egrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.af{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.comment-inp{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:11px;padding:2px 4px;width:100%;font-family:'Inter',sans-serif;outline:none;}
+.comment-inp:focus{border-bottom-color:rgba(99,102,241,.6);color:#fff;}
+.comment-inp::placeholder{color:rgba(255,255,255,.2)}
 .al{font-size:11px;font-weight:600;color:rgba(255,255,255,.4)}
 .ai{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:13px;font-weight:600;padding:9px 12px;font-family:'Inter',sans-serif;width:100%}
 </style>
@@ -225,6 +227,26 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <button class="mbtn mb-red" onclick="resetData()" style="margin-left:auto"><i class="ti ti-trash"></i> Nullstill</button>
     </div>
     <div class="smsg" id="add-msg"></div>
+  </div>
+</div>
+
+<!-- Individvisning -->
+<div class="ov" id="my-sales-modal">
+  <div class="modal full">
+    <h3 id="my-sales-title"><i class="ti ti-list"></i> Mine salg</h3>
+    <p id="my-sales-sub" style="margin-bottom:12px"></p>
+    <div style="overflow-x:auto;max-height:65vh;overflow-y:auto">
+      <table class="admin-table" id="my-sales-table">
+        <thead><tr>
+          <th>Dato</th><th>Måned</th><th>Uke</th><th>Ordrenr.</th><th>Antall</th><th>Produkt</th><th>CPO</th><th>Kommentar</th>
+        </tr></thead>
+        <tbody id="my-sales-tbody"></tbody>
+      </table>
+    </div>
+    <div class="mbtns" style="margin-top:14px">
+      <button class="mbtn mb-cancel" onclick="closeModal('my-sales-modal')">Lukk</button>
+      <div class="smsg" id="my-sales-msg" style="margin-left:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -435,11 +457,16 @@ const isActive=n=>{
   const low=normName(n);
   return consultants.some(c=>c.active&&(c.name.toLowerCase()===low||c.name.toLowerCase().split(' ').pop()===low||normName(c.name)===low));
 };
-const getDisplayName=n=>{
-  const low=normName(n);
-  const match=consultants.find(c=>c.name.toLowerCase()===low||c.name.toLowerCase().split(' ').pop()===low||normName(c.name)===low);
-  return match?match.name.split(' ')[0]:n;
-};
+function getDisplayName(fullName){
+  const firstName=fullName.split(' ')[0];
+  // Tell hvor mange aktive konsulenter har samme fornavn
+  const duplicates=consultants.filter(c=>c.active&&c.name.split(' ')[0]===firstName);
+  if(duplicates.length>1){
+    const lastInitial=fullName.split(' ').pop()[0].toUpperCase();
+    return`${firstName} ${lastInitial}.`;
+  }
+  return firstName;
+}
 const getKey=n=>{
   const low=normName(n);
   const match=consultants.find(c=>c.name.toLowerCase()===low||c.name.toLowerCase().split(' ').pop()===low||normName(c.name)===low);
@@ -696,11 +723,11 @@ function populateRegSelect(){
   const current=sel.value;
   const opts='<option value="">Velg navn...</option>'+
     consultants.filter(c=>c.active).sort((a,b)=>a.name.localeCompare(b.name))
-    .map(c=>`<option value="${c.name}">${c.name.split(' ')[0]} ${c.name.split(' ').pop()}</option>`).join('');
+    .map(c=>`<option value="${c.name}">${getDisplayName(c.name)}</option>`).join('');
   sel.innerHTML=opts;
   splitSel.innerHTML='<option value="">Velg medselger...</option>'+
     consultants.filter(c=>c.active).sort((a,b)=>a.name.localeCompare(b.name))
-    .map(c=>`<option value="${c.name}">${c.name.split(' ')[0]} ${c.name.split(' ').pop()}</option>`).join('');
+    .map(c=>`<option value="${c.name}">${getDisplayName(c.name)}</option>`).join('');
   if(current)sel.value=current;
 }
 
@@ -1044,8 +1071,53 @@ window.deleteAnn=async()=>{
 };
 
 // Edit seller
-window.openEditModal=sk=>{
-  requireAdmin(()=>{
+window.openMySales=async(sk)=>{
+  const cons=consultants.find(c=>c.name.toLowerCase()===sk);
+  if(!cons){return;}
+  const displayN=getDisplayName(cons.name);
+  document.getElementById('my-sales-title').innerHTML=`<i class="ti ti-list"></i> ${displayN} — Mine salg`;
+
+  // Hent fra registrations
+  const {data,error}=await sb.from('registrations')
+    .select('*')
+    .or(`consultant.ilike.${cons.name},consultant.ilike.${cons.name.split(' ')[0]}`)
+    .order('date_sold',{ascending:true});
+
+  const rows=data||[];
+  // Filtrer til riktig konsulent
+  const myRows=rows.filter(r=>r.consultant.toLowerCase().includes(cons.name.split(' ')[0].toLowerCase()));
+
+  // Summer
+  const totalCpo=myRows.reduce((a,r)=>a+(r.cpo||0),0);
+  const fiberSalg=myRows.filter(r=>isF(r.product)).length;
+  document.getElementById('my-sales-sub').innerHTML=
+    `<span style="color:#34d399;font-weight:700">${fiberSalg} FIBER-salg</span> &nbsp;•&nbsp; `+
+    `<span style="color:#fbbf24;font-weight:700">${kr(totalCpo)}</span> total CPO &nbsp;•&nbsp; `+
+    `<span style="color:rgba(255,255,255,.4)">${myRows.length} linjer</span>`;
+
+  document.getElementById('my-sales-tbody').innerHTML=myRows.map(r=>`<tr>
+    <td>${r.date_sold}</td>
+    <td>${r.month_name}</td>
+    <td>${r.week_number}</td>
+    <td>${r.order_number}</td>
+    <td>${r.quantity||1}</td>
+    <td>${r.product}</td>
+    <td style="color:${isF(r.product)?'#34d399':'rgba(255,255,255,.7)'};font-weight:600">${new Intl.NumberFormat('nb-NO').format(r.cpo)} kr</td>
+    <td><input class="comment-inp" value="${r.comment||''}" placeholder="Legg til kommentar..." onblur="saveComment('${r.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()"></td>
+  </tr>`).join('');
+
+  window.openM('my-sales-modal');
+};
+
+window.saveComment=async(id,comment)=>{
+  const {error}=await sb.from('registrations').update({comment:comment||null}).eq('id',id);
+  if(!error){
+    const msg=document.getElementById('my-sales-msg');
+    msg.textContent='✓ Kommentar lagret';
+    setTimeout(()=>{msg.textContent='';},1500);
+  }
+};
+  window.requireAdmin(()=>{
   currentSeller=sk;
   const mRows=allRows.filter(r=>getKey(r.name)===sk&&gmk(r.dateStr)===currentMK);
   const actualSalg=mRows.filter(r=>isF(r.product)).length;
@@ -1092,22 +1164,22 @@ window.clearEdit=async()=>{
 
 // Admin
 // Admin-tilgang med session-hukommelse
-let adminUnlocked=false;
-let pendingAdminAction=null;
+window._adminUnlocked=false;
+window._pendingAdminAction=null;
 
 window.requireAdmin=(action)=>{
-  if(adminUnlocked){action();return;}
-  pendingAdminAction=action;
+  if(window._adminUnlocked){action();return;}
+  window._pendingAdminAction=action;
   document.getElementById('admin-pw').value='';
   document.getElementById('pw-msg').textContent='';
   window.openM('admin-pw-modal');
 };
 
 window.openAdmin=()=>{
-  if(adminUnlocked){
+  if(window._adminUnlocked){
     loadRegistrations();renderConsList();showAdminTab('log');window.openM('admin-modal');return;
   }
-  pendingAdminAction=()=>{loadRegistrations();renderConsList();showAdminTab('log');window.openM('admin-modal');};
+  window._pendingAdminAction=()=>{loadRegistrations();renderConsList();showAdminTab('log');window.openM('admin-modal');};
   document.getElementById('admin-pw').value='';
   document.getElementById('pw-msg').textContent='';
   window.openM('admin-pw-modal');
@@ -1115,10 +1187,10 @@ window.openAdmin=()=>{
 
 window.checkAdmin=()=>{
   if(document.getElementById('admin-pw').value==='2024'){
-    adminUnlocked=true;
-    setTimeout(()=>{adminUnlocked=false;},30*60*1000);
+    window._adminUnlocked=true;
+    setTimeout(()=>{window._adminUnlocked=false;},30*60*1000);
     window.closeModal('admin-pw-modal');
-    if(pendingAdminAction){pendingAdminAction();pendingAdminAction=null;}
+    if(window._pendingAdminAction){window._pendingAdminAction();window._pendingAdminAction=null;}
   } else {
     document.getElementById('pw-msg').textContent='Feil kode.';
   }
@@ -1268,7 +1340,7 @@ function render(){
     const aS=rows.filter(r=>isF(r.product)).length;
     const aO=rows.reduce((a,r)=>a+r.value,0);
     const corr=corrections.find(x=>x.consultant===key&&x.month_key===lm);
-    return{key,name:firstName,fullName:c.name,salg:corr&&corr.salg_override!==null?corr.salg_override:aS,omset:corr&&corr.omset_override!==null?corr.omset_override:aO,hasCorr:!!corr};
+    return{key,name:getDisplayName(c.name),fullName:c.name,salg:corr&&corr.salg_override!==null?corr.salg_override:aS,omset:corr&&corr.omset_override!==null?corr.omset_override:aO,hasCorr:!!corr};
   });
 
   const wd=sd.filter(s=>s.salg>0||s.omset>0).sort((a,b)=>b.omset-a.omset||b.salg-a.salg);
@@ -1293,7 +1365,7 @@ function render(){
     const place=idx+1;
     const [bg,fg]=gac(s.name);
     const crown=place===1?'<div class="crown">👑</div>':'';
-    return`<div class="pod-col pod-${place}" onclick="openEditModal('${s.key}')" style="cursor:pointer">
+    return`<div class="pod-col pod-${place}" onclick="openMySales('${s.key}')" oncontextmenu="event.preventDefault();window.requireAdmin(()=>openEditModal('${s.key}'))" style="cursor:pointer" title="Klikk for salgslogg • Høyreklikk for å redigere (admin)">
       <div class="pod-av" style="background:${fg};color:${bg}">${crown}${ini(s.name)}</div>
       <div class="pod-name">${s.name}</div>
       <div class="pod-sub">${s.salg} fiber-salg</div>
@@ -1307,7 +1379,7 @@ function render(){
     const pct=maxO>0?Math.min(Math.round(s.omset/maxO*100),100):0;
     const [bg,fg]=gac(s.name);
     const clr=s.salg>=SMAL||s.omset>=OMAL?'#34d399':pct>=50?'#fbbf24':'#818cf8';
-    return`<div class="chase-row" onclick="openEditModal('${s.key}')">
+    return`<div class="chase-row" onclick="openMySales('${s.key}')" oncontextmenu="event.preventDefault();window.requireAdmin(()=>openEditModal('${s.key}'))" title="Klikk for salgslogg • Høyreklikk for å redigere (admin)">
       <span class="chase-rank">${i+4}</span>
       <div class="chase-av" style="background:${fg};color:${bg}">${ini(s.name)}</div>
       <span class="chase-name">${s.name}</span>
@@ -1319,7 +1391,10 @@ function render(){
   const recent=[...allRows].sort((a,b)=>pd(b.dateStr)-pd(a.dateStr)).slice(0,14);
   document.getElementById('feed-list').innerHTML=recent.map(r=>{
     const [bg,fg]=gac(r.name);
-    return`<div class="feed-item"><div class="feed-av" style="background:${fg};color:${bg}">${ini(r.name)}</div><div class="feed-info"><div class="feed-name">${r.name}</div><div class="feed-prod">${r.product}</div></div><div class="feed-val">+${kr(r.value)}</div></div>`;
+    // Finn konsulent for å bruke riktig visningsnavn
+    const cons=consultants.find(c=>c.name.split(' ')[0].toLowerCase()===r.name.toLowerCase()||c.name.toLowerCase()===r.name.toLowerCase());
+    const dispName=cons?getDisplayName(cons.name):r.name;
+    return`<div class="feed-item"><div class="feed-av" style="background:${fg};color:${bg}">${ini(r.name)}</div><div class="feed-info"><div class="feed-name">${dispName}</div><div class="feed-prod">${r.product}</div></div><div class="feed-val">+${kr(r.value)}</div></div>`;
   }).join('');
 }
 
