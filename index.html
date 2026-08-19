@@ -1187,13 +1187,13 @@ window.saveStatus=async(id,status)=>{
   const reg=registrations.find(r=>r.id===id);
   const msg=document.getElementById('admin-msg');
 
-  const originalCpo=reg?.original_cpo||reg?.cpo||0;
+  const originalCpo=reg?.original_cpo>0?reg.original_cpo:reg?.cpo||0;
   const newCpo=status==='kansellert'?0:originalCpo;
 
   // Oppdater registrations
   const update={status,cpo:newCpo};
-  if(status==='kansellert'&&!reg?.original_cpo){
-    update.original_cpo=reg?.cpo||0;
+  if(status==='kansellert'){
+    update.original_cpo=reg?.cpo>0?reg.cpo:(reg?.original_cpo>0?reg.original_cpo:0);
   }
   const {error}=await sb.from('registrations').update(update).eq('id',id);
   if(error){alert('Feil: '+error.message);return;}
