@@ -411,7 +411,8 @@ if(sessionStorage.getItem('dashboard-auth')==='ok'){
       <button class="mbtn mb-blue" onclick="showAdminTab('log')" id="tab-log">Salgslogg</button>
       <button class="mbtn mb-cancel" onclick="showAdminTab('cons')" id="tab-cons">Konsulenter</button>
       <button class="mbtn mb-cancel" onclick="showAdminTab('uke')" id="tab-uke">Ukesstatistikk</button>
-      <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Excel</button>
+      <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Salgsark</button>
+      <button class="copy-btn" onclick="copyLogNoStatus()" id="copy-log-no-status-btn" style="margin-left:8px;background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3)">Kopier til Internrapport</button>
     </div>
     <div id="team-filter-row" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <button class="mbtn mb-blue" id="tf-total" onclick="setTeamFilter('Total')">Alle team</button>
@@ -1452,6 +1453,7 @@ window.showAdminTab=(tab)=>{
   document.getElementById('admin-cons-section').style.display=tab==='cons'?'block':'none';
   document.getElementById('admin-uke-section').style.display=tab==='uke'?'block':'none';
   document.getElementById('copy-log-btn').style.display=tab==='log'?'inline-flex':'none';
+  document.getElementById('copy-log-no-status-btn').style.display=tab==='log'?'inline-flex':'none';
   document.getElementById('team-filter-row').style.display=tab==='log'?'flex':'none';
   document.getElementById('tab-log').className='mbtn '+(tab==='log'?'mb-blue':'mb-cancel');
   document.getElementById('tab-cons').className='mbtn '+(tab==='cons'?'mb-blue':'mb-cancel');
@@ -1642,7 +1644,21 @@ window.deleteReg=async(id)=>{
   loadRegistrations();
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
-window.updateConsTeam=async(id,team_name)=>{
+window.copyLogNoStatus=()=>{
+  let rows=registrations;
+  if(activeTeamFilter!=='Total'){
+    const teamMembers=consultants.filter(c=>c.team_name===activeTeamFilter).map(c=>c.name.toLowerCase());
+    rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
+  }
+  if(activeStatusFilter!=='alle'){
+    rows=rows.filter(r=>(r.status||'avventer')===activeStatusFilter);
+  }
+  const header='Konsulent\tep-bruker\tDato solgt\tMåned\tUke\tTeam\tOrdrenr.\tNettbutikk\tAntall\tProdukt\tCPO';
+  const lines=rows.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo].join('\t'));
+  navigator.clipboard.writeText([header,...lines].join('\n'));
+  document.getElementById('admin-msg').textContent='✓ Kopiert uten status!';
+  setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
+};
   await sb.from('consultants').update({team_name}).eq('id',id);
 };
 window.addConsultant=async()=>{
