@@ -151,6 +151,44 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 </style>
 </head>
 <body>
+
+<!-- Inngangspassord -->
+<div id="login-screen" style="position:fixed;inset:0;background:#070b14;z-index:999;display:flex;align-items:center;justify-content:center">
+  <div style="text-align:center;max-width:360px;width:90%">
+    <div style="font-size:13px;font-weight:700;color:#34d399;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Telenor Bedrift Fiber Oslo</div>
+    <div style="font-size:32px;font-weight:900;color:#fff;margin-bottom:32px">MÅNEDENS ARENA</div>
+    <div style="background:#0d1320;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px">
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.35);margin-bottom:12px">Skriv inn tilgangskode</div>
+      <input id="login-pw" type="password" placeholder="••••"
+        style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:28px;font-weight:700;padding:12px;text-align:center;font-family:'Inter',sans-serif;letter-spacing:.3em;outline:none;margin-bottom:12px"
+        onkeydown="if(event.key==='Enter')checkLogin()">
+      <button onclick="checkLogin()"
+        style="width:100%;background:linear-gradient(90deg,#34d399,#22c55e);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;padding:12px;cursor:pointer;font-family:'Inter',sans-serif">
+        Logg inn
+      </button>
+      <div id="login-msg" style="font-size:11px;color:#f87171;margin-top:10px;min-height:16px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function checkLogin(){
+  const pw=document.getElementById('login-pw').value;
+  if(pw==='7777'){
+    document.getElementById('login-screen').style.display='none';
+    sessionStorage.setItem('dashboard-auth','ok');
+  } else {
+    document.getElementById('login-msg').textContent='Feil kode — prøv igjen.';
+    document.getElementById('login-pw').value='';
+  }
+}
+// Husk innlogging i session
+if(sessionStorage.getItem('dashboard-auth')==='ok'){
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('login-screen').style.display='none';
+  });
+}
+</script>
 <div class="shell">
   <div class="titles">
     <div>
