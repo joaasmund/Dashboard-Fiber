@@ -403,16 +403,37 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
     </div>
 
     <div id="admin-uke-section" style="display:none">
-      <div style="overflow-x:auto;max-height:60vh;overflow-y:auto">
-        <table class="admin-table" id="uke-table">
-          <thead><tr>
-            <th>Uke</th>
-            <th style="color:#34d399">Fiber-salg</th>
-            <th style="color:#a5b4fc">Wifi Connect Inne</th>
-            <th style="color:#fbbf24">TBB-salg</th>
-          </tr></thead>
-          <tbody id="uke-tbody"></tbody>
-        </table>
+      <!-- Teamfilter -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="mbtn mb-blue" id="utf-total" onclick="setUkeTeamFilter('Total')">Alle team</button>
+        <button class="mbtn mb-cancel" id="utf-team1" onclick="setUkeTeamFilter('Team 1')">Team 1</button>
+        <button class="mbtn mb-cancel" id="utf-team2" onclick="setUkeTeamFilter('Team 2')">Team 2</button>
+        <button class="mbtn mb-cancel" id="utf-team3" onclick="setUkeTeamFilter('Team 3')">Team 3</button>
+      </div>
+      <div style="overflow-x:auto;max-height:65vh;overflow-y:auto;display:flex;flex-direction:column;gap:20px">
+        <!-- Totaloversikt per uke -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Totalt per uke</div>
+          <table class="admin-table" id="uke-table">
+            <thead><tr>
+              <th>Uke</th>
+              <th style="color:#34d399">Fiber-salg</th>
+              <th style="color:#a5b4fc">Wifi Connect Inne</th>
+              <th style="color:#fbbf24">TBB-salg</th>
+            </tr></thead>
+            <tbody id="uke-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Per konsulent per uke -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Fiber-salg per konsulent per uke</div>
+          <div id="uke-individ-wrap" style="overflow-x:auto">
+            <table class="admin-table" id="uke-individ-table">
+              <thead id="uke-individ-head"></thead>
+              <tbody id="uke-individ-tbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
     <div class="mbtns" style="margin-top:14px">
@@ -1012,29 +1033,30 @@ window.submitReg=async()=>{
   allProducts.forEach(p=>{
     const pOrder=productOrderMap.get(p)||orders[0];
     const qty=productQtyMap.get(p)||1;
-    const effectiveCpo=(p._cpo||p.cpo)*qty;
-    const myVal=isSplit?Math.round(effectiveCpo*myPct/100):effectiveCpo;
-    const otherVal=isSplit?(effectiveCpo-myVal):0;
 
-    regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
-      month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-      order_number:pOrder,nettbutikk:'0',quantity:qty,product:p.name,cpo:myVal});
-    salesRows.push({consultant:cons.name.split(' ')[0],date_of_sale:today,
-      week:String(weekNum),value:myVal,product:p.name});
+    // WIFI CONNECT INNE: lag én linje per aksesspunkt
+    const iterations=p.name===WIFI_INNE?qty:1;
+    const unitCpo=p._cpo||p.cpo;
 
-    if(isSplit&&splitCons){
-      regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
+    for(let q=0;q<iterations;q++){
+      const effectiveCpo=unitCpo;
+      const myVal=isSplit?Math.round(effectiveCpo*myPct/100):effectiveCpo;
+      const otherVal=isSplit?(effectiveCpo-myVal):0;
+
+      regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
         month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
-        order_number:pOrder,nettbutikk:'0',quantity:qty,product:p.name,cpo:otherVal});
-      salesRows.push({consultant:splitCons.name.split(' ')[0],date_of_sale:today,
-        week:String(weekNum),value:otherVal,product:p.name});
+        order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:myVal});
+
+      if(isSplit&&splitCons){
+        regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
+          month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
+          order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:otherVal});
+      }
     }
   });
 
   const {error:regErr}=await sb.from('registrations').insert(regRows);
   if(regErr){msg.textContent='Feil: '+regErr.message;return;}
-  const {error:salesErr}=await sb.from('sales').insert(salesRows);
-  if(salesErr){msg.textContent='Feil ved oppdatering av dashboard: '+salesErr.message;return;}
 
   PRODUCTS.forEach((_,i)=>{
     document.getElementById(`prod-${i}`).checked=false;
@@ -1370,40 +1392,90 @@ window.showAdminTab=(tab)=>{
   if(tab==='uke') renderUkeStats();
 };
 
+let activeUkeTeamFilter='Total';
+
+window.setUkeTeamFilter=filter=>{
+  activeUkeTeamFilter=filter;
+  ['Total','Team 1','Team 2','Team 3'].forEach(t=>{
+    const id='utf-'+t.toLowerCase().replace(' ','');
+    const el=document.getElementById(id);
+    if(el)el.className='mbtn '+(t===filter?'mb-blue':'mb-cancel');
+  });
+  renderUkeStats();
+};
+
 function renderUkeStats(){
   const tbody=document.getElementById('uke-tbody');
   if(!tbody)return;
 
-  // Grupper etter ukenummer — ekskluder kansellerte
-  const aktive=registrations.filter(r=>(r.status||'avventer')!=='kansellert');
+  // Filtrer på team og ekskluder kansellerte
+  let aktive=registrations.filter(r=>(r.status||'avventer')!=='kansellert');
+  if(activeUkeTeamFilter!=='Total'){
+    const teamMembers=consultants.filter(c=>c.team_name===activeUkeTeamFilter).map(c=>c.name.toLowerCase());
+    aktive=aktive.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
+  }
 
+  // Uker totalt
   const uker={};
   aktive.forEach(r=>{
-    const uke=r.week_number;
-    if(!uke)return;
+    const uke=r.week_number;if(!uke)return;
     if(!uker[uke])uker[uke]={fiber:0,wifi:0,tbb:0};
     const p=(r.product||'').toUpperCase();
-    if(p.includes('FIBER')) uker[uke].fiber++;
-    else if(p.includes('WIFI CONNECT INNE')) uker[uke].wifi++;
-    else if(p.startsWith('TBB')) uker[uke].tbb++;
+    if(p.includes('FIBER'))uker[uke].fiber++;
+    else if(p.includes('WIFI CONNECT INNE'))uker[uke].wifi++;
+    else if(p.startsWith('TBB'))uker[uke].tbb++;
   });
+  const sortedUker=Object.keys(uker).map(Number).sort((a,b)=>a-b);
 
-  const sorted=Object.keys(uker).map(Number).sort((a,b)=>a-b);
+  if(!sortedUker.length){
+    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Ingen data</td></tr>';
+    document.getElementById('uke-individ-head').innerHTML='';
+    document.getElementById('uke-individ-tbody').innerHTML='';
+    return;
+  }
 
-  if(!sorted.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:20px">Ingen data</td></tr>';return;}
-
-  tbody.innerHTML=sorted.map(uke=>`<tr>
+  tbody.innerHTML=sortedUker.map(uke=>`<tr>
     <td style="font-weight:700">Uke ${uke}</td>
-    <td style="color:#34d399;font-weight:700;font-size:16px">${uker[uke].fiber}</td>
-    <td style="color:#a5b4fc;font-weight:700;font-size:16px">${uker[uke].wifi}</td>
-    <td style="color:#fbbf24;font-weight:700;font-size:16px">${uker[uke].tbb}</td>
+    <td style="color:#34d399;font-weight:700;font-size:15px">${uker[uke].fiber}</td>
+    <td style="color:#a5b4fc;font-weight:700;font-size:15px">${uker[uke].wifi}</td>
+    <td style="color:#fbbf24;font-weight:700;font-size:15px">${uker[uke].tbb}</td>
   </tr>`).join('')+
   `<tr style="border-top:1px solid rgba(255,255,255,.15)">
     <td style="font-weight:700;color:rgba(255,255,255,.5)">Totalt</td>
-    <td style="color:#34d399;font-weight:800;font-size:16px">${sorted.reduce((a,u)=>a+uker[u].fiber,0)}</td>
-    <td style="color:#a5b4fc;font-weight:800;font-size:16px">${sorted.reduce((a,u)=>a+uker[u].wifi,0)}</td>
-    <td style="color:#fbbf24;font-weight:800;font-size:16px">${sorted.reduce((a,u)=>a+uker[u].tbb,0)}</td>
+    <td style="color:#34d399;font-weight:800;font-size:15px">${sortedUker.reduce((a,u)=>a+uker[u].fiber,0)}</td>
+    <td style="color:#a5b4fc;font-weight:800;font-size:15px">${sortedUker.reduce((a,u)=>a+uker[u].wifi,0)}</td>
+    <td style="color:#fbbf24;font-weight:800;font-size:15px">${sortedUker.reduce((a,u)=>a+uker[u].tbb,0)}</td>
   </tr>`;
+
+  // Per konsulent per uke — kun Fiber
+  const fiberRows=aktive.filter(r=>(r.product||'').toUpperCase().includes('FIBER'));
+  const consSet=new Set(fiberRows.map(r=>r.consultant));
+  const consNames=[...consSet].sort();
+
+  // Bygg per-konsulent-per-uke-map
+  const grid={};
+  consNames.forEach(c=>{grid[c]={};sortedUker.forEach(u=>{grid[c][u]=0;});});
+  fiberRows.forEach(r=>{
+    if(grid[r.consultant]&&r.week_number) grid[r.consultant][r.week_number]++;
+  });
+
+  // Render individ-tabell
+  document.getElementById('uke-individ-head').innerHTML=`<tr>
+    <th>Konsulent</th>
+    ${sortedUker.map(u=>`<th style="color:#34d399">Uke ${u}</th>`).join('')}
+    <th style="color:#34d399">Totalt</th>
+  </tr>`;
+
+  document.getElementById('uke-individ-tbody').innerHTML=consNames.map(c=>{
+    const cons=consultants.find(x=>x.name===c);
+    const dispName=cons?getDisplayName(cons.name):c.split(' ')[0];
+    const total=sortedUker.reduce((a,u)=>a+(grid[c][u]||0),0);
+    return`<tr>
+      <td style="font-weight:600">${dispName}</td>
+      ${sortedUker.map(u=>`<td style="text-align:center;color:${(grid[c][u]||0)>0?'#f1f5f9':'rgba(255,255,255,.2)'};font-weight:${(grid[c][u]||0)>0?'700':'400'}">${grid[c][u]||0}</td>`).join('')}
+      <td style="text-align:center;color:#34d399;font-weight:800">${total}</td>
+    </tr>`;
+  }).join('');
 }
 
 window.setStatusFilter=filter=>{
