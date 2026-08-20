@@ -1659,6 +1659,7 @@ window.copyLogNoStatus=()=>{
   document.getElementById('admin-msg').textContent='✓ Kopiert uten status!';
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
+window.updateConsTeam=async(id,team_name)=>{
   await sb.from('consultants').update({team_name}).eq('id',id);
 };
 window.addConsultant=async()=>{
