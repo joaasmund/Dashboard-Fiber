@@ -172,17 +172,31 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 </div>
 
 <script>
-function checkLogin(){
+async function checkLogin(){
   const pw=document.getElementById('login-pw').value;
-  if(pw==='7777'){
-    document.getElementById('login-screen').style.display='none';
-    sessionStorage.setItem('dashboard-auth','ok');
-  } else {
-    document.getElementById('login-msg').textContent='Feil kode — prøv igjen.';
-    document.getElementById('login-pw').value='';
+  const msg=document.getElementById('login-msg');
+  if(!pw){msg.textContent='Skriv inn kode.';return;}
+  msg.textContent='Sjekker...';
+  try{
+    const res=await fetch('https://pwsoebozobzgmojojtdx.supabase.co/rest/v1/site_config?key=eq.site_password&select=value',{
+      headers:{
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
+      }
+    });
+    const data=await res.json();
+    if(data&&data[0]&&data[0].value===pw){
+      document.getElementById('login-screen').style.display='none';
+      sessionStorage.setItem('dashboard-auth','ok');
+      msg.textContent='';
+    } else {
+      msg.textContent='Feil kode — prøv igjen.';
+      document.getElementById('login-pw').value='';
+    }
+  } catch(e){
+    msg.textContent='Feil ved tilkobling — prøv igjen.';
   }
 }
-// Husk innlogging i session
 if(sessionStorage.getItem('dashboard-auth')==='ok'){
   document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('login-screen').style.display='none';
