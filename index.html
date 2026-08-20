@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Salgsdashboard — Telenor Bedrift Fiber Drammen</title>
+<title>Salgsdashboard — Telenor Bedrift Fiber Oslo</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -155,7 +155,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 <!-- Inngangspassord -->
 <div id="login-screen" style="position:fixed;inset:0;background:#070b14;z-index:999;display:flex;align-items:center;justify-content:center">
   <div style="text-align:center;max-width:360px;width:90%">
-    <div style="font-size:13px;font-weight:700;color:#34d399;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Telenor Bedrift Fiber Drammen</div>
+    <div style="font-size:13px;font-weight:700;color:#34d399;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Telenor Bedrift Fiber Oslo</div>
     <div style="font-size:32px;font-weight:900;color:#fff;margin-bottom:32px">MÅNEDENS ARENA</div>
     <div style="background:#0d1320;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px">
       <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.35);margin-bottom:12px">Skriv inn tilgangskode</div>
@@ -178,16 +178,16 @@ async function checkLogin(){
   if(!pw){msg.textContent='Skriv inn kode.';return;}
   msg.textContent='Sjekker...';
   try{
-    const res=await fetch('https://fceeqtkwghpgssmykffm.supabase.co/rest/v1/site_config?key=eq.site_password&select=value',{
+    const res=await fetch('https://pwsoebozobzgmojojtdx.supabase.co/rest/v1/site_config?key=eq.site_password&select=value',{
       headers:{
-        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZWVxdGt3Z2hwZ3NzbXlrZmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTA4NTgsImV4cCI6MjEwMjc4Njg1OH0.i7JmTYSSfl6NDMbOzeVfLcYoGC54MwIEKo8wo5bupAY',
-        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZWVxdGt3Z2hwZ3NzbXlrZmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTA4NTgsImV4cCI6MjEwMjc4Njg1OH0.i7JmTYSSfl6NDMbOzeVfLcYoGC54MwIEKo8wo5bupAY'
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
       }
     });
     const data=await res.json();
     if(data&&data[0]&&data[0].value===pw){
       document.getElementById('login-screen').style.display='none';
-      sessionStorage.setItem('dashboard-drammen-auth','ok');
+      sessionStorage.setItem('dashboard-auth','ok');
       msg.textContent='';
     } else {
       msg.textContent='Feil kode — prøv igjen.';
@@ -197,7 +197,7 @@ async function checkLogin(){
     msg.textContent='Feil ved tilkobling — prøv igjen.';
   }
 }
-if(sessionStorage.getItem('dashboard-drammen-auth')==='ok'){
+if(sessionStorage.getItem('dashboard-auth')==='ok'){
   document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('login-screen').style.display='none';
   });
@@ -206,7 +206,7 @@ if(sessionStorage.getItem('dashboard-drammen-auth')==='ok'){
 <div class="shell">
   <div class="titles">
     <div>
-      <div class="eyebrow">Telenor Bedrift Fiber Drammen · <span id="month-lbl">Juni 2026</span></div>
+      <div class="eyebrow">Telenor Bedrift Fiber Oslo · <span id="month-lbl">Juni 2026</span></div>
       <div class="h1">MÅNEDENS <span class="accent">ARENA</span></div>
     </div>
     <div class="top-right">
@@ -498,8 +498,8 @@ if(sessionStorage.getItem('dashboard-drammen-auth')==='ok'){
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const sb = createClient(
-  'https://fceeqtkwghpgssmykffm.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZWVxdGt3Z2hwZ3NzbXlrZmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTA4NTgsImV4cCI6MjEwMjc4Njg1OH0.i7JmTYSSfl6NDMbOzeVfLcYoGC54MwIEKo8wo5bupAY'
+  'https://pwsoebozobzgmojojtdx.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
 );
 
 const PRODUCTS=[
@@ -1096,12 +1096,12 @@ window.submitReg=async()=>{
       const otherVal=isSplit?(effectiveCpo-myVal):0;
 
       regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
-        month_name:monthName,week_number:weekNum,team:'Fiber Drammen',
+        month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
         order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:myVal});
 
       if(isSplit&&splitCons){
         regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
-          month_name:monthName,week_number:weekNum,team:'Fiber Drammen',
+          month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
           order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:otherVal});
       }
     }
@@ -1175,7 +1175,7 @@ window.addData=async()=>{
       date_sold:r.date_of_sale,
       month_name:monthName,
       week_number:weekNum,
-      team:'Fiber Drammen',
+      team:'Fiber Oslo',
       order_number:r.order_number,
       nettbutikk:'0',
       quantity:1,
@@ -1427,10 +1427,10 @@ window.checkAdmin=async()=>{
   const msg=document.getElementById('pw-msg');
   msg.textContent='Sjekker...';
   try{
-    const res=await fetch('https://fceeqtkwghpgssmykffm.supabase.co/rest/v1/site_config?key=eq.admin_password&select=value',{
+    const res=await fetch('https://pwsoebozobzgmojojtdx.supabase.co/rest/v1/site_config?key=eq.admin_password&select=value',{
       headers:{
-        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZWVxdGt3Z2hwZ3NzbXlrZmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTA4NTgsImV4cCI6MjEwMjc4Njg1OH0.i7JmTYSSfl6NDMbOzeVfLcYoGC54MwIEKo8wo5bupAY',
-        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZWVxdGt3Z2hwZ3NzbXlrZmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTA4NTgsImV4cCI6MjEwMjc4Njg1OH0.i7JmTYSSfl6NDMbOzeVfLcYoGC54MwIEKo8wo5bupAY'
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
       }
     });
     const data=await res.json();
