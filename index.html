@@ -1422,14 +1422,29 @@ window.openAdmin=()=>{
   window.openM('admin-pw-modal');
 };
 
-window.checkAdmin=()=>{
-  if(document.getElementById('admin-pw').value==='2024'){
-    window._adminUnlocked=true;
-    setTimeout(()=>{window._adminUnlocked=false;},30*60*1000);
-    window.closeModal('admin-pw-modal');
-    if(window._pendingAdminAction){window._pendingAdminAction();window._pendingAdminAction=null;}
-  } else {
-    document.getElementById('pw-msg').textContent='Feil kode.';
+window.checkAdmin=async()=>{
+  const pw=document.getElementById('admin-pw').value;
+  const msg=document.getElementById('pw-msg');
+  msg.textContent='Sjekker...';
+  try{
+    const res=await fetch('https://pwsoebozobzgmojojtdx.supabase.co/rest/v1/site_config?key=eq.admin_password&select=value',{
+      headers:{
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
+      }
+    });
+    const data=await res.json();
+    if(data&&data[0]&&data[0].value===pw){
+      window._adminUnlocked=true;
+      setTimeout(()=>{window._adminUnlocked=false;},30*60*1000);
+      msg.textContent='';
+      window.closeModal('admin-pw-modal');
+      if(window._pendingAdminAction){window._pendingAdminAction();window._pendingAdminAction=null;}
+    } else {
+      msg.textContent='Feil kode.';
+    }
+  } catch(e){
+    msg.textContent='Feil ved tilkobling.';
   }
 };
 window.showAdminTab=(tab)=>{
