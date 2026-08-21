@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Salgsdashboard — Telenor Bedrift Fiber Drammen</title>
+<title>Salgsdashboard — Telenor Bedrift Fiber Oslo</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -151,10 +151,62 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 </style>
 </head>
 <body>
+
+<!-- Inngangspassord -->
+<div id="login-screen" style="position:fixed;inset:0;background:#070b14;z-index:999;display:flex;align-items:center;justify-content:center">
+  <div style="text-align:center;max-width:360px;width:90%">
+    <div style="font-size:13px;font-weight:700;color:#34d399;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Telenor Bedrift Fiber Oslo</div>
+    <div style="font-size:32px;font-weight:900;color:#fff;margin-bottom:32px">MÅNEDENS ARENA</div>
+    <div style="background:#0d1320;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px">
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.35);margin-bottom:12px">Skriv inn tilgangskode</div>
+      <input id="login-pw" type="password" placeholder="••••"
+        style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:28px;font-weight:700;padding:12px;text-align:center;font-family:'Inter',sans-serif;letter-spacing:.3em;outline:none;margin-bottom:12px"
+        onkeydown="if(event.key==='Enter')checkLogin()">
+      <button onclick="checkLogin()"
+        style="width:100%;background:linear-gradient(90deg,#34d399,#22c55e);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;padding:12px;cursor:pointer;font-family:'Inter',sans-serif">
+        Logg inn
+      </button>
+      <div id="login-msg" style="font-size:11px;color:#f87171;margin-top:10px;min-height:16px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function checkLogin(){
+  const pw=document.getElementById('login-pw').value;
+  const msg=document.getElementById('login-msg');
+  if(!pw){msg.textContent='Skriv inn kode.';return;}
+  msg.textContent='Sjekker...';
+  try{
+    const res=await fetch('https://pwsoebozobzgmojojtdx.supabase.co/rest/v1/site_config?key=eq.site_password&select=value',{
+      headers:{
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
+      }
+    });
+    const data=await res.json();
+    if(data&&data[0]&&data[0].value===pw){
+      document.getElementById('login-screen').style.display='none';
+      sessionStorage.setItem('dashboard-auth','ok');
+      msg.textContent='';
+    } else {
+      msg.textContent='Feil kode — prøv igjen.';
+      document.getElementById('login-pw').value='';
+    }
+  } catch(e){
+    msg.textContent='Feil ved tilkobling — prøv igjen.';
+  }
+}
+if(sessionStorage.getItem('dashboard-auth')==='ok'){
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('login-screen').style.display='none';
+  });
+}
+</script>
 <div class="shell">
   <div class="titles">
     <div>
-      <div class="eyebrow">Telenor Bedrift Fiber Drammen · <span id="month-lbl">Juni 2026</span></div>
+      <div class="eyebrow">Telenor Bedrift Fiber Oslo · <span id="month-lbl">Juni 2026</span></div>
       <div class="h1">MÅNEDENS <span class="accent">ARENA</span></div>
     </div>
     <div class="top-right">
@@ -288,7 +340,7 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
         <div id="order-inputs">
           <input class="inp" id="reg-order-0" type="text" placeholder="F.eks. 7656754 eller Case-07656754" style="margin-bottom:6px">
         </div>
-        <span class="hint">Fiber/TBB: 7 siffer · NS/PORT: 11 siffer · Maks 1 primærprodukt per ordrenummer</span>
+        <span class="hint">Fiber/TBB: nøyaktig 7 siffer (f.eks. 7656754) · NS/PORT: nøyaktig 11 siffer · Maks 1 primærprodukt per ordrenummer</span>
       </div>
     </div>
     <div id="addon-order-section" style="display:none;margin-bottom:14px"></div>
@@ -359,7 +411,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
       <button class="mbtn mb-blue" onclick="showAdminTab('log')" id="tab-log">Salgslogg</button>
       <button class="mbtn mb-cancel" onclick="showAdminTab('cons')" id="tab-cons">Konsulenter</button>
       <button class="mbtn mb-cancel" onclick="showAdminTab('uke')" id="tab-uke">Ukesstatistikk</button>
-      <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Excel</button>
+      <button class="copy-btn" onclick="copyLog()" id="copy-log-btn" style="margin-left:auto">Kopier til Salgsark</button>
+      <button class="copy-btn" onclick="copyLogNoStatus()" id="copy-log-no-status-btn" style="margin-left:8px;background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3)">Kopier til Internrapport</button>
     </div>
     <div id="team-filter-row" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <button class="mbtn mb-blue" id="tf-total" onclick="setTeamFilter('Total')">Alle team</button>
@@ -446,8 +499,8 @@ body{background:#070b14;color:#fff;font-family:'Inter',sans-serif;min-height:100
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const sb = createClient(
-  'https://fceeqtkwghpgssmykffm.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZWVxdGt3Z2hwZ3NzbXlrZmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTA4NTgsImV4cCI6MjEwMjc4Njg1OH0.i7JmTYSSfl6NDMbOzeVfLcYoGC54MwIEKo8wo5bupAY'
+  'https://pwsoebozobzgmojojtdx.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
 );
 
 const PRODUCTS=[
@@ -608,7 +661,7 @@ sb.channel('s2').on('postgres_changes',{event:'*',schema:'public',table:'correct
 sb.channel('s3').on('postgres_changes',{event:'*',schema:'public',table:'announcements'},loadAnn).subscribe();
 sb.channel('s5').on('postgres_changes',{event:'*',schema:'public',table:'consultants'},loadConsultants).subscribe();
 
-const LEAD_PRODUCTS=['WIFI CONNECT AKS','LEAD WIFI CONNECT'];
+const LEAD_PRODUCTS=['LEAD WIFI CONNECT'];
 const isLead=p=>LEAD_PRODUCTS.includes(p.name);
 
 // Populate product grid
@@ -683,18 +736,14 @@ function updateLeadPriceFields(){
     section.style.display='block';
     section.innerHTML=`<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:9px;padding:12px 14px;margin-bottom:14px">
       <div class="lbl" style="color:#fbbf24;margin-bottom:6px"><i class="ti ti-info-circle"></i> Lead-registrering</div>
-      <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px">Registreres kun når utfallet er kjent fra leadsgruppen.</p>
-      ${leads.map((p,i)=>p.name==='WIFI CONNECT AKS'?`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:11px;color:rgba(255,255,255,.4);min-width:140px">${p.name} (250 kr/stk)</span>
-          <select class="sel" id="lead-qty-${i}" style="flex:1">
-            ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}">${n} aksess${n>1?'er':''} = ${new Intl.NumberFormat('nb-NO').format(n*250)} kr</option>`).join('')}
-          </select>
-        </div>`:`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:11px;color:rgba(255,255,255,.4)">${p.name}</span>
-          <span style="font-size:11px;color:#34d399;margin-left:auto">700 kr</span>
-        </div>`).join('')}
+      <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px">Registreres kun når utfallet er kjent. Lager én linje for leadet (700 kr) + én linje per aksess (250 kr).</p>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;color:rgba(255,255,255,.4)">Antall aksesser solgt</span>
+        <select class="sel" id="lead-aks-qty" style="width:130px">
+          <option value="0">Ingen aksesser</option>
+          ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}">${n} aksess${n>1?'er':''} = ${new Intl.NumberFormat('nb-NO').format(n*250)} kr</option>`).join('')}
+        </select>
+      </div>
     </div>`;
   } else {
     section.style.display='none';
@@ -866,15 +915,10 @@ window.submitReg=async()=>{
     p._cpo=hasBinding?(p.tbbHigh?4500:3000):2000;
   });
   const leadSelected=selected.filter(p=>isLead(p));
-  leadSelected.forEach((p,i)=>{
-    if(p.name==='WIFI CONNECT AKS'){
-      const qty=parseInt(document.getElementById(`lead-qty-${i}`)?.value||'1');
-      p._cpo=250*qty;
-      p._qty=qty;
-    } else {
-      p._cpo=700;
-      p._qty=1;
-    }
+  leadSelected.forEach(p=>{
+    p._cpo=700;
+    p._qty=1;
+    p._aksQty=parseInt(document.getElementById('lead-aks-qty')?.value||'0');
   });
 
   const primaries=selected.filter(p=>isPrimaryProduct(p));
@@ -896,9 +940,8 @@ window.submitReg=async()=>{
       order=digits;
     } else {
       const digits=raw.replace(/\D/g,'');
-      const last7=digits.slice(-7);
-      if(!last7||last7.length!==7){msg.textContent=`Ordrenummer ${i+1}: Fiber/TBB krever 7 siffer.`;return;}
-      order=last7;
+      if(digits.length!==7){msg.textContent=`Ordrenummer ${i+1}: Fiber/TBB krever nøyaktig 7 siffer.`;return;}
+      order=digits;
     }
     orders.push(order);
   }
@@ -1044,13 +1087,29 @@ window.submitReg=async()=>{
       const otherVal=isSplit?(effectiveCpo-myVal):0;
 
       regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
-        month_name:monthName,week_number:weekNum,team:'Fiber Drammen',
+        month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
         order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:myVal});
 
       if(isSplit&&splitCons){
         regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
-          month_name:monthName,week_number:weekNum,team:'Fiber Drammen',
+          month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
           order_number:pOrder,nettbutikk:'0',quantity:1,product:p.name,cpo:otherVal});
+      }
+    }
+
+    // LEAD WIFI CONNECT: legg til aksess-linjer
+    if(isLead(p)&&p._aksQty>0){
+      for(let a=0;a<p._aksQty;a++){
+        const aksVal=isSplit?Math.round(250*myPct/100):250;
+        const aksOther=isSplit?(250-aksVal):0;
+        regRows.push({consultant:cons.name,ep_user:cons.ep_user,date_sold:today,
+          month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
+          order_number:pOrder,nettbutikk:'0',quantity:1,product:'WIFI CONNECT AKS',cpo:aksVal});
+        if(isSplit&&splitCons){
+          regRows.push({consultant:splitCons.name,ep_user:splitCons.ep_user,date_sold:today,
+            month_name:monthName,week_number:weekNum,team:'Fiber Oslo',
+            order_number:pOrder,nettbutikk:'0',quantity:1,product:'WIFI CONNECT AKS',cpo:aksOther});
+        }
       }
     }
   });
@@ -1123,7 +1182,7 @@ window.addData=async()=>{
       date_sold:r.date_of_sale,
       month_name:monthName,
       week_number:weekNum,
-      team:'Fiber Drammen',
+      team:'Fiber Oslo',
       order_number:r.order_number,
       nettbutikk:'0',
       quantity:1,
@@ -1370,14 +1429,29 @@ window.openAdmin=()=>{
   window.openM('admin-pw-modal');
 };
 
-window.checkAdmin=()=>{
-  if(document.getElementById('admin-pw').value==='2024'){
-    window._adminUnlocked=true;
-    setTimeout(()=>{window._adminUnlocked=false;},30*60*1000);
-    window.closeModal('admin-pw-modal');
-    if(window._pendingAdminAction){window._pendingAdminAction();window._pendingAdminAction=null;}
-  } else {
-    document.getElementById('pw-msg').textContent='Feil kode.';
+window.checkAdmin=async()=>{
+  const pw=document.getElementById('admin-pw').value;
+  const msg=document.getElementById('pw-msg');
+  msg.textContent='Sjekker...';
+  try{
+    const res=await fetch('https://pwsoebozobzgmojojtdx.supabase.co/rest/v1/site_config?key=eq.admin_password&select=value',{
+      headers:{
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3c29lYm96b2J6Z21vam9qdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDY0OTUsImV4cCI6MjA5NzE4MjQ5NX0.0ww8_az1_3Qf83GK15WvExSaQvjmjCXncEkCr5ZZCLA'
+      }
+    });
+    const data=await res.json();
+    if(data&&data[0]&&data[0].value===pw){
+      window._adminUnlocked=true;
+      setTimeout(()=>{window._adminUnlocked=false;},30*60*1000);
+      msg.textContent='';
+      window.closeModal('admin-pw-modal');
+      if(window._pendingAdminAction){window._pendingAdminAction();window._pendingAdminAction=null;}
+    } else {
+      msg.textContent='Feil kode.';
+    }
+  } catch(e){
+    msg.textContent='Feil ved tilkobling.';
   }
 };
 window.showAdminTab=(tab)=>{
@@ -1385,6 +1459,7 @@ window.showAdminTab=(tab)=>{
   document.getElementById('admin-cons-section').style.display=tab==='cons'?'block':'none';
   document.getElementById('admin-uke-section').style.display=tab==='uke'?'block':'none';
   document.getElementById('copy-log-btn').style.display=tab==='log'?'inline-flex':'none';
+  document.getElementById('copy-log-no-status-btn').style.display=tab==='log'?'inline-flex':'none';
   document.getElementById('team-filter-row').style.display=tab==='log'?'flex':'none';
   document.getElementById('tab-log').className='mbtn '+(tab==='log'?'mb-blue':'mb-cancel');
   document.getElementById('tab-cons').className='mbtn '+(tab==='cons'?'mb-blue':'mb-cancel');
@@ -1573,6 +1648,21 @@ window.deleteReg=async(id)=>{
   }
   document.getElementById('admin-msg').textContent='✓ Linje slettet.';
   loadRegistrations();
+  setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
+};
+window.copyLogNoStatus=()=>{
+  let rows=registrations;
+  if(activeTeamFilter!=='Total'){
+    const teamMembers=consultants.filter(c=>c.team_name===activeTeamFilter).map(c=>c.name.toLowerCase());
+    rows=rows.filter(r=>teamMembers.some(m=>r.consultant.toLowerCase().includes(m.split(' ')[0].toLowerCase())));
+  }
+  if(activeStatusFilter!=='alle'){
+    rows=rows.filter(r=>(r.status||'avventer')===activeStatusFilter);
+  }
+  const header='Konsulent\tep-bruker\tDato solgt\tMåned\tUke\tTeam\tOrdrenr.\tNettbutikk\tAntall\tProdukt\tCPO';
+  const lines=rows.map(r=>[r.consultant,r.ep_user,r.date_sold,r.month_name,r.week_number,r.team,r.order_number,r.nettbutikk||'0',r.quantity||1,r.product,r.cpo].join('\t'));
+  navigator.clipboard.writeText([header,...lines].join('\n'));
+  document.getElementById('admin-msg').textContent='✓ Kopiert uten status!';
   setTimeout(()=>{document.getElementById('admin-msg').textContent='';},2000);
 };
 window.updateConsTeam=async(id,team_name)=>{
